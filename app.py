@@ -32,7 +32,7 @@ def init_db():
 @app.get("/")
 def index():
     with get_db() as connection:
-        current_activity = connection.execute(
+        current_activity_row = connection.execute(
             """
             SELECT id, name, started_at, ended_at
             FROM activities
@@ -42,9 +42,49 @@ def index():
             """
         ).fetchone()
 
+        recent_activity_rows = connection.execute(
+            """
+            SELECT id, name, started_at, ended_at
+            FROM activities
+            WHERE ended_at IS NOT NULL
+            ORDER BY started_at DESC
+            LIMIT 50
+            """
+        ).fetchall()
+
+    current_activity = add_display_values(
+        current_activity_row
+    )
+
+    recent_activities = [
+        add_display_values(activity)
+        for activity in recent_activity_rows
+    ]
+
+    activity_groups = []
+
+    for activity in recent_activities:
+        is_new_date = (
+            not activity_groups
+            or activity_groups[-1]["date_key"]
+            != activity["date_key"]
+        )
+
+        if is_new_date:
+            activity_groups.append(
+                {
+                    "date_key": activity["date_key"],
+                    "date_display": activity["date_display"],
+                    "activities": [],
+                }
+            )
+
+        activity_groups[-1]["activities"].append(activity)
+
     return render_template(
         "index.html",
         current_activity=current_activity,
+        activity_groups=activity_groups,
     )
 
 
@@ -81,3 +121,57 @@ def start_activity():
 
 
 init_db()
+
+def add_display_values(activity):
+    if activity is None:
+        return None
+
+    result = dict(activity)
+
+    started_at = datetime.fromisoformat(result["started_at"])
+
+    # 現在のタスク表示などで使う日時
+    result["started_at_display"] = started_at.strftime(
+        "%Y/%m/%d %H:%M:%S"
+    )
+
+    # アクティビティログの日付グループ用
+    result["date_key"] = started_at.date().isoformat()
+    result["date_display"] = (
+        f"{started_at.month}月{started_at.day}日"
+    )
+
+    # ログ内では時刻だけを表示する
+    result["started_time_display"] = started_at.strftime(
+        "%H:%M:%S"
+    )
+
+    if result["ended_at"]:
+        ended_at = datetime.fromisoformat(result["ended_at"])
+
+        result["ended_at_display"] = ended_at.strftime(
+            "%Y/%m/%d %H:%M:%S"
+        )
+
+        result["ended_time_display"] = ended_at.strftime(
+            "%H:%M:%S"
+        )
+
+        total_seconds = max(
+            0,
+            int((ended_at - started_at).total_seconds()),
+        )
+
+        hours = total_seconds // 3600
+        minutes = (total_seconds % 3600) // 60
+        seconds = total_seconds % 60
+
+        result["duration_display"] = (
+            f"{hours:02}:{minutes:02}:{seconds:02}"
+        )
+    else:
+        result["ended_at_display"] = None
+        result["ended_time_display"] = None
+        result["duration_display"] = None
+
+    return result

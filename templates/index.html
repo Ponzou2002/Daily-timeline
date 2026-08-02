@@ -2,57 +2,155 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
     <title>Daily Timeline</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap"
+        rel="stylesheet"
+    >
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
 </head>
+
 <body>
-    <h1>Daily Timeline</h1>
+    <main class="app-container">
+        <header class="app-header">
+            <h1>DAILY TIMELINE</h1>
+        </header>
 
-    <form method="post" action="{{ url_for('start_activity') }}">
-        <label for="task-name">これから始めること</label>
+        <section class="current-panel">
+            <p class="panel-label">CURRENT ACTIVITY</p>
 
-        <input
-            type="text"
-            id="task-name"
-            name="task_name"
-            placeholder="例：Daily Timelineの開発"
-            autocomplete="off"
-            required
-        >
+            {% if current_activity %}
+                <h2 class="current-task">
+                    {{ current_activity["name"] }}
+                </h2>
 
-        <button type="submit">開始</button>
-    </form>
-
-    <section>
-        <h2>現在</h2>
-
-        {% if current_activity %}
-            <p>
-                <strong>{{ current_activity["name"] }}</strong>
-            </p>
-
-            <p>
-                経過時間：
-                <span
+                <div
                     id="elapsed-time"
+                    class="digital-clock"
                     data-started-at="{{ current_activity['started_at'] }}"
                 >
                     00:00:00
-                </span>
-            </p>
+                </div>
 
-            <p>
-                開始時刻：{{ current_activity["started_at"] }}
-            </p>
-        {% else %}
-            <p>まだ何も開始していません。</p>
-        {% endif %}
-    </section>
+                <p class="started-at">
+                    STARTED
+                    <span>
+                        {{ current_activity["started_at_display"] }}
+                    </span>
+                </p>
+            {% else %}
+                <h2 class="current-task inactive">
+                    NO ACTIVITY
+                </h2>
+
+                <div class="digital-clock inactive">
+                    00:00:00
+                </div>
+
+                <p class="started-at">
+                    新しい活動を開始してください
+                </p>
+            {% endif %}
+        </section>
+
+        <section class="control-panel">
+            <form
+                method="post"
+                action="{{ url_for('start_activity') }}"
+                class="start-form"
+            >
+                <label for="task-name">
+                    次に始めること
+                </label>
+
+                <div class="form-row">
+                    <input
+                        type="text"
+                        id="task-name"
+                        name="task_name"
+                        placeholder="例：Daily Timelineの開発"
+                        autocomplete="off"
+                        required
+                    >
+
+                    <button type="submit">
+                        START
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <section class="history-panel">
+            <div class="section-heading">
+                <h2>ACTIVITY LOG</h2>
+                <span>最近の記録</span>
+            </div>
+
+            {% if activity_groups %}
+                {% for group in activity_groups %}
+                    <section class="activity-day">
+                        <h3 class="activity-date">
+                            {{ group["date_display"] }}
+                        </h3>
+
+                        <div class="table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>やったこと</th>
+                                        <th>開始時刻</th>
+                                        <th>終了時刻</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    {% for activity in group["activities"] %}
+                                        <tr>
+                                            <td class="activity-name">
+                                                {{ activity["name"] }}
+                                            </td>
+
+                                            <td>
+                                                {{ activity["started_time_display"] }}
+                                            </td>
+
+                                            <td>
+                                                {{ activity["ended_time_display"] }}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+                {% endfor %}
+            {% else %}
+                <p class="empty-message">
+                    終了した記録はまだありません。
+                </p>
+            {% endif %}
+        </section>
+    </main>
 
     {% if current_activity %}
         <script>
-            const elapsedElement = document.getElementById("elapsed-time");
-            const startedAt = new Date(elapsedElement.dataset.startedAt);
+            const elapsedElement =
+                document.getElementById("elapsed-time");
+
+            const startedAt =
+                new Date(elapsedElement.dataset.startedAt);
 
             function updateElapsedTime() {
                 const elapsedMilliseconds = Math.max(
@@ -60,18 +158,26 @@
                     Date.now() - startedAt.getTime()
                 );
 
-                const totalSeconds = Math.floor(elapsedMilliseconds / 1000);
+                const totalSeconds =
+                    Math.floor(elapsedMilliseconds / 1000);
 
-                const hours = Math.floor(totalSeconds / 3600);
-                const minutes = Math.floor((totalSeconds % 3600) / 60);
-                const seconds = totalSeconds % 60;
+                const hours =
+                    Math.floor(totalSeconds / 3600);
+
+                const minutes =
+                    Math.floor((totalSeconds % 3600) / 60);
+
+                const seconds =
+                    totalSeconds % 60;
 
                 elapsedElement.textContent = [
                     hours,
                     minutes,
                     seconds
                 ]
-                    .map(value => String(value).padStart(2, "0"))
+                    .map(value =>
+                        String(value).padStart(2, "0")
+                    )
                     .join(":");
             }
 

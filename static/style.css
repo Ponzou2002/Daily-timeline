@@ -1,0 +1,489 @@
+:root {
+    --background: #010407;
+    --panel-background: rgba(3, 15, 22, 0.82);
+    --panel-background-light: rgba(7, 28, 39, 0.72);
+
+    --cyan: #52e7ff;
+    --cyan-bright: #a1f5ff;
+    --cyan-dark: #13788a;
+
+    --text: #dffbff;
+    --muted: #6ea6af;
+
+    --border: rgba(82, 231, 255, 0.34);
+    --border-bright: rgba(82, 231, 255, 0.75);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    min-height: 100%;
+    background: var(--background);
+}
+
+body {
+    min-height: 100vh;
+    margin: 0;
+
+    color: var(--text);
+    background:
+        radial-gradient(
+            circle at 50% 25%,
+            rgba(17, 114, 139, 0.22),
+            transparent 38%
+        ),
+        linear-gradient(
+            180deg,
+            #02080d 0%,
+            var(--background) 70%
+        );
+
+    font-family:
+        "Segoe UI",
+        "Yu Gothic UI",
+        "Meiryo",
+        sans-serif;
+}
+
+button,
+input {
+    font: inherit;
+}
+
+.app-container {
+    width: min(1100px, calc(100% - 32px));
+    margin: 0 auto;
+    padding: 32px 0 64px;
+}
+
+.app-header {
+    margin-bottom: 28px;
+    text-align: center;
+}
+
+.app-header h1 {
+    margin: 0;
+
+    color: var(--cyan);
+    font-family:
+        Consolas,
+        "Courier New",
+        monospace;
+    font-size: clamp(18px, 2.5vw, 28px);
+    font-weight: 500;
+    letter-spacing: 0.35em;
+
+    text-shadow:
+        0 0 6px rgba(82, 231, 255, 0.85),
+        0 0 18px rgba(82, 231, 255, 0.42);
+}
+
+/* 現在のタスク */
+
+.current-panel {
+    position: relative;
+    overflow: hidden;
+
+    min-height: 420px;
+    padding: 52px 28px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    text-align: center;
+
+    background:
+        linear-gradient(
+            180deg,
+            rgba(8, 31, 42, 0.84),
+            rgba(1, 8, 13, 0.92)
+        );
+
+    border: 1px solid var(--border-bright);
+    border-radius: 18px;
+
+    box-shadow:
+        inset 0 0 24px rgba(82, 231, 255, 0.07),
+        0 0 10px rgba(82, 231, 255, 0.17),
+        0 0 34px rgba(82, 231, 255, 0.09);
+}
+
+.current-panel::before,
+.current-panel::after {
+    content: "";
+    position: absolute;
+    pointer-events: none;
+}
+
+.current-panel::before {
+    inset: 14px;
+    border: 1px solid rgba(82, 231, 255, 0.12);
+    border-radius: 12px;
+}
+
+.current-panel::after {
+    width: 70%;
+    height: 1px;
+    bottom: 36px;
+
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(82, 231, 255, 0.55),
+        transparent
+    );
+}
+
+.panel-label {
+    margin: 0 0 28px;
+
+    color: var(--muted);
+    font-family:
+        Consolas,
+        "Courier New",
+        monospace;
+    font-size: 13px;
+    letter-spacing: 0.3em;
+}
+
+.current-task {
+    max-width: 900px;
+    margin: 0 0 24px;
+
+    color: var(--cyan-bright);
+    font-size: clamp(30px, 6vw, 68px);
+    font-weight: 600;
+    line-height: 1.18;
+    overflow-wrap: anywhere;
+
+    text-shadow:
+        0 0 8px rgba(82, 231, 255, 0.7),
+        0 0 24px rgba(82, 231, 255, 0.28);
+}
+
+.digital-clock {
+    margin: 0;
+
+    color: var(--cyan);
+    font-family:
+        "Share Tech Mono",
+        Consolas,
+        "Courier New",
+        monospace;
+
+    font-size: clamp(58px, 12vw, 132px);
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    line-height: 1;
+
+    text-shadow:
+        0 0 4px rgba(82, 231, 255, 1),
+        0 0 12px rgba(82, 231, 255, 0.9),
+        0 0 28px rgba(82, 231, 255, 0.55),
+        0 0 52px rgba(82, 231, 255, 0.25);
+}
+
+.started-at {
+    margin: 30px 0 0;
+
+    color: var(--muted);
+    font-family:
+        Consolas,
+        "Courier New",
+        monospace;
+    font-size: 13px;
+    letter-spacing: 0.13em;
+}
+
+.started-at span {
+    margin-left: 8px;
+    color: var(--text);
+}
+
+.inactive {
+    color: #31525a;
+    text-shadow: none;
+}
+
+/* 入力部分 */
+
+.control-panel,
+.history-panel {
+    margin-top: 24px;
+    padding: 24px;
+
+    background: var(--panel-background);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+
+    box-shadow:
+        inset 0 0 18px rgba(82, 231, 255, 0.025),
+        0 0 20px rgba(0, 0, 0, 0.42);
+}
+
+.start-form label {
+    display: block;
+    margin-bottom: 10px;
+
+    color: var(--muted);
+    font-size: 14px;
+}
+
+.form-row {
+    display: flex;
+    gap: 12px;
+}
+
+input[type="text"] {
+    width: 100%;
+    min-width: 0;
+    padding: 14px 16px;
+
+    color: var(--text);
+    caret-color: var(--cyan);
+
+    background: rgba(0, 7, 11, 0.82);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    outline: none;
+
+    transition:
+        border-color 140ms ease,
+        box-shadow 140ms ease;
+}
+
+input[type="text"]::placeholder {
+    color: #42636a;
+}
+
+input[type="text"]:focus {
+    border-color: var(--cyan);
+    box-shadow:
+        0 0 0 2px rgba(82, 231, 255, 0.11),
+        0 0 14px rgba(82, 231, 255, 0.17);
+}
+
+button {
+    min-width: 132px;
+    padding: 14px 22px;
+
+    color: #001015;
+    background: var(--cyan);
+
+    border: 1px solid var(--cyan-bright);
+    border-radius: 8px;
+
+    font-family:
+        Consolas,
+        "Courier New",
+        monospace;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 0 10px rgba(82, 231, 255, 0.48),
+        0 0 24px rgba(82, 231, 255, 0.18);
+
+    transition:
+        transform 120ms ease,
+        background-color 120ms ease,
+        box-shadow 120ms ease;
+}
+
+button:hover {
+    background: var(--cyan-bright);
+    box-shadow:
+        0 0 12px rgba(82, 231, 255, 0.72),
+        0 0 32px rgba(82, 231, 255, 0.28);
+}
+
+button:active {
+    transform: translateY(1px);
+}
+
+/* 履歴 */
+.activity-day {
+    margin-top: 28px;
+}
+
+.activity-day:first-of-type {
+    margin-top: 0;
+}
+
+.activity-day + .activity-day {
+    padding-top: 26px;
+    border-top: 1px solid rgba(82, 231, 255, 0.16);
+}
+
+.activity-date {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    margin: 0 0 12px;
+    padding-bottom: 10px;
+
+    color: var(--cyan-bright);
+    border-bottom: 1px solid var(--border);
+
+    font-family:
+        "Share Tech Mono",
+        Consolas,
+        "Courier New",
+        monospace;
+
+    font-size: 22px;
+    font-weight: 400;
+    letter-spacing: 0.08em;
+
+    text-shadow:
+        0 0 6px rgba(82, 231, 255, 0.7),
+        0 0 18px rgba(82, 231, 255, 0.25);
+}
+
+.activity-date::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+
+    background: var(--cyan);
+    border-radius: 50%;
+
+    box-shadow:
+        0 0 6px rgba(82, 231, 255, 1),
+        0 0 14px rgba(82, 231, 255, 0.65);
+}
+
+.section-heading {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    margin-bottom: 18px;
+}
+
+.section-heading h2 {
+    margin: 0;
+
+    color: var(--cyan);
+    font-family:
+        Consolas,
+        "Courier New",
+        monospace;
+    font-size: 18px;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+
+    text-shadow:
+        0 0 9px rgba(82, 231, 255, 0.35);
+}
+
+.section-heading span {
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.table-wrapper {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th,
+td {
+    padding: 14px 12px;
+    text-align: left;
+    white-space: nowrap;
+}
+
+th {
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+}
+
+td {
+    border-bottom: 1px solid rgba(82, 231, 255, 0.1);
+    color: #b6d8de;
+    font-family:
+        Consolas,
+        "Courier New",
+        monospace;
+    font-size: 13px;
+}
+
+tbody tr {
+    transition: background-color 120ms ease;
+}
+
+tbody tr:hover {
+    background: rgba(82, 231, 255, 0.045);
+}
+
+.activity-name {
+    width: 100%;
+    color: var(--text);
+    font-family:
+        "Segoe UI",
+        "Yu Gothic UI",
+        "Meiryo",
+        sans-serif;
+    font-size: 14px;
+    white-space: normal;
+}
+
+.duration {
+    color: var(--cyan);
+    font-weight: 600;
+}
+
+.empty-message {
+    color: var(--muted);
+}
+
+/* スマートフォン */
+
+@media (max-width: 640px) {
+    .app-container {
+        width: min(100% - 20px, 1100px);
+        padding-top: 20px;
+    }
+
+    .current-panel {
+        min-height: 350px;
+        padding: 38px 16px;
+    }
+
+    .current-task {
+        margin-bottom: 28px;
+    }
+
+    .digital-clock {
+        letter-spacing: 0;
+    }
+
+    .form-row {
+        flex-direction: column;
+    }
+
+    button {
+        width: 100%;
+    }
+
+    .control-panel,
+    .history-panel {
+        padding: 18px;
+    }
+}
