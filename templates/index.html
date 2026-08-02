@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Timeline</title>
+</head>
+<body>
+    <h1>Daily Timeline</h1>
+
+    <form method="post" action="{{ url_for('start_activity') }}">
+        <label for="task-name">これから始めること</label>
+
+        <input
+            type="text"
+            id="task-name"
+            name="task_name"
+            placeholder="例：Daily Timelineの開発"
+            autocomplete="off"
+            required
+        >
+
+        <button type="submit">開始</button>
+    </form>
+
+    <section>
+        <h2>現在</h2>
+
+        {% if current_activity %}
+            <p>
+                <strong>{{ current_activity["name"] }}</strong>
+            </p>
+
+            <p>
+                経過時間：
+                <span
+                    id="elapsed-time"
+                    data-started-at="{{ current_activity['started_at'] }}"
+                >
+                    00:00:00
+                </span>
+            </p>
+
+            <p>
+                開始時刻：{{ current_activity["started_at"] }}
+            </p>
+        {% else %}
+            <p>まだ何も開始していません。</p>
+        {% endif %}
+    </section>
+
+    {% if current_activity %}
+        <script>
+            const elapsedElement = document.getElementById("elapsed-time");
+            const startedAt = new Date(elapsedElement.dataset.startedAt);
+
+            function updateElapsedTime() {
+                const elapsedMilliseconds = Math.max(
+                    0,
+                    Date.now() - startedAt.getTime()
+                );
+
+                const totalSeconds = Math.floor(elapsedMilliseconds / 1000);
+
+                const hours = Math.floor(totalSeconds / 3600);
+                const minutes = Math.floor((totalSeconds % 3600) / 60);
+                const seconds = totalSeconds % 60;
+
+                elapsedElement.textContent = [
+                    hours,
+                    minutes,
+                    seconds
+                ]
+                    .map(value => String(value).padStart(2, "0"))
+                    .join(":");
+            }
+
+            updateElapsedTime();
+            setInterval(updateElapsedTime, 1000);
+        </script>
+    {% endif %}
+</body>
+</html>
