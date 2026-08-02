@@ -1,7 +1,5 @@
 :root {
     --background: #010407;
-    --panel-background: rgba(3, 15, 22, 0.82);
-    --panel-background-light: rgba(7, 28, 39, 0.72);
 
     --cyan: #52e7ff;
     --cyan-bright: #a1f5ff;
@@ -12,7 +10,15 @@
 
     --border: rgba(82, 231, 255, 0.34);
     --border-bright: rgba(82, 231, 255, 0.75);
+
+    --glass-background: rgba(2, 12, 18, 0.55);
+    --glass-background-light: rgba(3, 13, 19, 0.52);
 }
+
+
+/* ========================================
+   全体
+======================================== */
 
 * {
     box-sizing: border-box;
@@ -28,17 +34,21 @@ body {
     margin: 0;
 
     color: var(--text);
+
     background:
         radial-gradient(
             circle at 50% 25%,
-            rgba(17, 114, 139, 0.22),
-            transparent 38%
+            rgba(82, 231, 255, 0.08),
+            transparent 42%
         ),
         linear-gradient(
-            180deg,
-            #02080d 0%,
-            var(--background) 70%
-        );
+            rgba(0, 0, 0, 0.42),
+            rgba(0, 0, 0, 0.68)
+        ),
+        url("images/background.png")
+        center center / cover
+        fixed
+        no-repeat;
 
     font-family:
         "Segoe UI",
@@ -52,11 +62,21 @@ input {
     font: inherit;
 }
 
+
+/* ========================================
+   アプリ全体の配置
+======================================== */
+
 .app-container {
     width: min(1100px, calc(100% - 32px));
     margin: 0 auto;
     padding: 32px 0 64px;
 }
+
+
+/* ========================================
+   ヘッダー
+======================================== */
 
 .app-header {
     margin-bottom: 28px;
@@ -67,10 +87,13 @@ input {
     margin: 0;
 
     color: var(--cyan);
+
     font-family:
+        "Share Tech Mono",
         Consolas,
         "Courier New",
         monospace;
+
     font-size: clamp(18px, 2.5vw, 28px);
     font-weight: 500;
     letter-spacing: 0.35em;
@@ -80,13 +103,16 @@ input {
         0 0 18px rgba(82, 231, 255, 0.42);
 }
 
-/* 現在のタスク */
+
+/* ========================================
+   現在のタスク
+======================================== */
 
 .current-panel {
     position: relative;
     overflow: hidden;
 
-    min-height: 420px;
+    min-height: 440px;
     padding: 52px 28px;
 
     display: flex;
@@ -96,20 +122,19 @@ input {
 
     text-align: center;
 
-    background:
-        linear-gradient(
-            180deg,
-            rgba(8, 31, 42, 0.84),
-            rgba(1, 8, 13, 0.92)
-        );
+    background: var(--glass-background);
 
     border: 1px solid var(--border-bright);
     border-radius: 18px;
 
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+
     box-shadow:
         inset 0 0 24px rgba(82, 231, 255, 0.07),
-        0 0 10px rgba(82, 231, 255, 0.17),
-        0 0 34px rgba(82, 231, 255, 0.09);
+        0 8px 40px rgba(0, 0, 0, 0.48),
+        0 0 12px rgba(82, 231, 255, 0.18),
+        0 0 38px rgba(82, 231, 255, 0.09);
 }
 
 .current-panel::before,
@@ -121,6 +146,7 @@ input {
 
 .current-panel::before {
     inset: 14px;
+
     border: 1px solid rgba(82, 231, 255, 0.12);
     border-radius: 12px;
 }
@@ -142,22 +168,30 @@ input {
     margin: 0 0 28px;
 
     color: var(--muted);
+
     font-family:
+        "Share Tech Mono",
         Consolas,
         "Courier New",
         monospace;
+
     font-size: 13px;
     letter-spacing: 0.3em;
 }
 
 .current-task {
+    position: relative;
+    z-index: 1;
+
     max-width: 900px;
-    margin: 0 0 24px;
+    margin: 0 0 26px;
 
     color: var(--cyan-bright);
+
     font-size: clamp(30px, 6vw, 68px);
     font-weight: 600;
     line-height: 1.18;
+
     overflow-wrap: anywhere;
 
     text-shadow:
@@ -165,10 +199,19 @@ input {
         0 0 24px rgba(82, 231, 255, 0.28);
 }
 
+
+/* ========================================
+   デジタル時計
+======================================== */
+
 .digital-clock {
+    position: relative;
+    z-index: 1;
+
     margin: 0;
 
     color: var(--cyan);
+
     font-family:
         "Share Tech Mono",
         Consolas,
@@ -190,13 +233,19 @@ input {
 }
 
 .started-at {
+    position: relative;
+    z-index: 1;
+
     margin: 30px 0 0;
 
     color: var(--muted);
+
     font-family:
+        "Share Tech Mono",
         Consolas,
         "Courier New",
         monospace;
+
     font-size: 13px;
     letter-spacing: 0.13em;
 }
@@ -211,21 +260,34 @@ input {
     text-shadow: none;
 }
 
-/* 入力部分 */
+
+/* ========================================
+   入力パネル・履歴パネル共通
+======================================== */
 
 .control-panel,
 .history-panel {
     margin-top: 24px;
     padding: 24px;
 
-    background: var(--panel-background);
+    background: var(--glass-background-light);
+
     border: 1px solid var(--border);
     border-radius: 14px;
 
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+
     box-shadow:
         inset 0 0 18px rgba(82, 231, 255, 0.025),
-        0 0 20px rgba(0, 0, 0, 0.42);
+        0 8px 30px rgba(0, 0, 0, 0.42),
+        0 0 16px rgba(82, 231, 255, 0.06);
 }
+
+
+/* ========================================
+   タスク入力フォーム
+======================================== */
 
 .start-form label {
     display: block;
@@ -248,14 +310,16 @@ input[type="text"] {
     color: var(--text);
     caret-color: var(--cyan);
 
-    background: rgba(0, 7, 11, 0.82);
+    background: rgba(0, 8, 12, 0.58);
+
     border: 1px solid var(--border);
     border-radius: 8px;
     outline: none;
 
     transition:
         border-color 140ms ease,
-        box-shadow 140ms ease;
+        box-shadow 140ms ease,
+        background-color 140ms ease;
 }
 
 input[type="text"]::placeholder {
@@ -263,7 +327,9 @@ input[type="text"]::placeholder {
 }
 
 input[type="text"]:focus {
+    background: rgba(0, 11, 16, 0.76);
     border-color: var(--cyan);
+
     box-shadow:
         0 0 0 2px rgba(82, 231, 255, 0.11),
         0 0 14px rgba(82, 231, 255, 0.17);
@@ -280,9 +346,11 @@ button {
     border-radius: 8px;
 
     font-family:
+        "Share Tech Mono",
         Consolas,
         "Courier New",
         monospace;
+
     font-weight: 700;
     letter-spacing: 0.12em;
 
@@ -300,6 +368,7 @@ button {
 
 button:hover {
     background: var(--cyan-bright);
+
     box-shadow:
         0 0 12px rgba(82, 231, 255, 0.72),
         0 0 32px rgba(82, 231, 255, 0.28);
@@ -309,7 +378,48 @@ button:active {
     transform: translateY(1px);
 }
 
-/* 履歴 */
+
+/* ========================================
+   アクティビティログ見出し
+======================================== */
+
+.section-heading {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+
+    margin-bottom: 24px;
+}
+
+.section-heading h2 {
+    margin: 0;
+
+    color: var(--cyan);
+
+    font-family:
+        "Share Tech Mono",
+        Consolas,
+        "Courier New",
+        monospace;
+
+    font-size: 18px;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+
+    text-shadow:
+        0 0 9px rgba(82, 231, 255, 0.35);
+}
+
+.section-heading span {
+    color: var(--muted);
+    font-size: 13px;
+}
+
+
+/* ========================================
+   日付ごとのグループ
+======================================== */
+
 .activity-day {
     margin-top: 28px;
 }
@@ -332,6 +442,7 @@ button:active {
     padding-bottom: 10px;
 
     color: var(--cyan-bright);
+
     border-bottom: 1px solid var(--border);
 
     font-family:
@@ -351,8 +462,11 @@ button:active {
 
 .activity-date::before {
     content: "";
+
     width: 7px;
     height: 7px;
+
+    flex: 0 0 auto;
 
     background: var(--cyan);
     border-radius: 50%;
@@ -362,33 +476,10 @@ button:active {
         0 0 14px rgba(82, 231, 255, 0.65);
 }
 
-.section-heading {
-    display: flex;
-    align-items: baseline;
-    gap: 14px;
-    margin-bottom: 18px;
-}
 
-.section-heading h2 {
-    margin: 0;
-
-    color: var(--cyan);
-    font-family:
-        Consolas,
-        "Courier New",
-        monospace;
-    font-size: 18px;
-    font-weight: 500;
-    letter-spacing: 0.16em;
-
-    text-shadow:
-        0 0 9px rgba(82, 231, 255, 0.35);
-}
-
-.section-heading span {
-    color: var(--muted);
-    font-size: 13px;
-}
+/* ========================================
+   履歴テーブル
+======================================== */
 
 .table-wrapper {
     overflow-x: auto;
@@ -408,20 +499,26 @@ td {
 
 th {
     color: var(--muted);
+
     border-bottom: 1px solid var(--border);
+
     font-size: 12px;
     font-weight: 500;
     letter-spacing: 0.08em;
 }
 
 td {
-    border-bottom: 1px solid rgba(82, 231, 255, 0.1);
     color: #b6d8de;
+
+    border-bottom: 1px solid rgba(82, 231, 255, 0.1);
+
     font-family:
+        "Share Tech Mono",
         Consolas,
         "Courier New",
         monospace;
-    font-size: 13px;
+
+    font-size: 14px;
 }
 
 tbody tr {
@@ -429,17 +526,20 @@ tbody tr {
 }
 
 tbody tr:hover {
-    background: rgba(82, 231, 255, 0.045);
+    background: rgba(82, 231, 255, 0.055);
 }
 
 .activity-name {
     width: 100%;
+
     color: var(--text);
+
     font-family:
         "Segoe UI",
         "Yu Gothic UI",
         "Meiryo",
         sans-serif;
+
     font-size: 14px;
     white-space: normal;
 }
@@ -453,12 +553,24 @@ tbody tr:hover {
     color: var(--muted);
 }
 
-/* スマートフォン */
+
+/* ========================================
+   スマートフォン表示
+======================================== */
 
 @media (max-width: 640px) {
+    body {
+        background-position: center center;
+        background-attachment: scroll;
+    }
+
     .app-container {
         width: min(100% - 20px, 1100px);
         padding-top: 20px;
+    }
+
+    .app-header h1 {
+        letter-spacing: 0.2em;
     }
 
     .current-panel {
@@ -474,6 +586,11 @@ tbody tr:hover {
         letter-spacing: 0;
     }
 
+    .started-at span {
+        display: block;
+        margin: 8px 0 0;
+    }
+
     .form-row {
         flex-direction: column;
     }
@@ -485,5 +602,10 @@ tbody tr:hover {
     .control-panel,
     .history-panel {
         padding: 18px;
+    }
+
+    th,
+    td {
+        padding: 12px 10px;
     }
 }
