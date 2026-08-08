@@ -1,0 +1,314 @@
+/* ========================================
+   HEADER / HAMBURGER MENU
+======================================== */
+
+.app-header {
+    position: relative;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+}
+
+.header-brand {
+    min-width: 0;
+
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.menu-toggle {
+    width: 38px;
+    min-width: 38px !important;
+    height: 34px;
+    padding: 0 !important;
+
+    display: inline-flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+
+    border-radius: 8px;
+}
+
+.menu-toggle span {
+    width: 15px;
+    height: 1px;
+
+    display: block;
+
+    background: currentColor;
+}
+
+.current-time-widget {
+    position: static;
+    transform: none;
+
+    flex: 0 0 auto;
+}
+
+
+/* ========================================
+   DRAWER
+======================================== */
+
+.menu-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+
+    visibility: hidden;
+    opacity: 0;
+
+    background: rgba(0, 0, 0, 0.56);
+
+    transition:
+        opacity 160ms ease,
+        visibility 160ms ease;
+}
+
+.menu-backdrop.is-open {
+    visibility: visible;
+    opacity: 1;
+}
+
+.app-menu {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 100;
+
+    width: min(390px, calc(100vw - 34px));
+    padding: 18px;
+    overflow-y: auto;
+
+    color: var(--theme-text);
+    background: color-mix(
+        in srgb,
+        var(--theme-panel-strong) 96%,
+        transparent
+    );
+
+    border-right: 1px solid var(--theme-border);
+
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+
+    box-shadow:
+        20px 0 50px rgba(0, 0, 0, 0.36);
+
+    transform: translateX(-102%);
+
+    transition: transform 180ms ease;
+}
+
+.app-menu.is-open {
+    transform: translateX(0);
+}
+
+.menu-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+
+    margin-bottom: 18px;
+    padding-bottom: 14px;
+
+    border-bottom: 1px solid var(--theme-divider);
+}
+
+.menu-header h2 {
+    margin: 0;
+
+    font-size: 15px;
+    letter-spacing: 0.14em;
+}
+
+.menu-close {
+    min-width: 34px !important;
+    width: 34px;
+    height: 32px;
+    padding: 0 !important;
+
+    font-size: 18px !important;
+    line-height: 1;
+}
+
+.menu-nav {
+    margin-bottom: 22px;
+}
+
+.menu-link {
+    min-height: 42px;
+    padding: 10px 12px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+
+    color: var(--theme-text-soft);
+    text-decoration: none;
+
+    border: 1px solid transparent;
+    border-radius: 8px;
+}
+
+.menu-link:hover {
+    color: var(--accent-bright);
+    background: var(--accent-06);
+    border-color: var(--accent-22);
+}
+
+.menu-link span:last-child {
+    color: var(--theme-muted);
+    font-size: 11px;
+}
+
+
+/* ========================================
+   SETTINGS
+======================================== */
+
+.settings-section {
+    padding-top: 2px;
+}
+
+.settings-heading {
+    margin-bottom: 14px;
+}
+
+.settings-heading h2 {
+    margin: 0 0 3px;
+
+    font-size: 15px;
+    letter-spacing: 0.14em;
+}
+
+.settings-heading span {
+    color: var(--theme-muted);
+    font-size: 11px;
+}
+
+.settings-group {
+    margin-top: 16px;
+    padding-top: 14px;
+
+    border-top: 1px solid var(--theme-divider);
+}
+
+.settings-group:first-of-type {
+    margin-top: 0;
+}
+
+.settings-group-title {
+    margin: 0 0 11px;
+
+    color: var(--theme-text-soft);
+
+    font-size: 11px;
+    letter-spacing: 0.14em;
+}
+
+.setting-field {
+    display: grid;
+    grid-template-columns: 118px minmax(0, 1fr);
+    align-items: center;
+    gap: 12px;
+
+    margin-top: 10px;
+}
+
+.setting-field label {
+    color: var(--theme-muted);
+    font-size: 11px;
+}
+
+.setting-field select {
+    width: 100%;
+    min-width: 0;
+    padding: 8px 10px;
+
+    color: var(--theme-text);
+    background: var(--theme-input);
+
+    border: 1px solid var(--theme-border-strong);
+    border-radius: 7px;
+
+    font: inherit;
+    font-size: 12px;
+}
+
+.setting-field select:focus {
+    outline: 1px solid var(--accent);
+    outline-offset: 1px;
+}
+
+.settings-save {
+    width: 100%;
+    margin-top: 18px;
+}
+
+.settings-note {
+    margin-top: 10px;
+
+    color: var(--theme-muted);
+    font-size: 10px;
+    line-height: 1.55;
+}
+
+
+/* ========================================
+   TEXTURE OVERRIDES FOR MENU
+======================================== */
+
+html[data-texture="flat"] .app-menu {
+    background: var(--theme-panel-solid);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+}
+
+html[data-texture="neumorphism"] .app-menu {
+    background: var(--theme-background);
+    border-right: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+}
+
+html[data-texture="neumorphism"] .setting-field select {
+    background: var(--theme-background);
+    border: none;
+
+    box-shadow:
+        inset 3px 3px 7px var(--neu-shadow),
+        inset -3px -3px 7px var(--neu-highlight);
+}
+
+
+@media (max-width: 700px) {
+    .app-header {
+        align-items: flex-start;
+    }
+
+    .header-brand {
+        flex: 1 1 auto;
+    }
+
+    .current-time-widget {
+        margin: 0;
+    }
+
+    .current-time-widget span {
+        display: none;
+    }
+
+    .setting-field {
+        grid-template-columns: 1fr;
+        gap: 5px;
+    }
+}
