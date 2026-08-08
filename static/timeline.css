@@ -155,6 +155,9 @@
 /* Theme側の通常色より詳細度を上げて、
    選択中のアクセントカラーでホバーを強調する。 */
 .timeline-panel .timeline-activity:hover {
+    z-index: 20;
+    overflow: visible;
+
     background: var(--accent-16);
     border-left-color: var(--accent);
 
@@ -213,11 +216,6 @@
     }
 
     /* hover中だけタイトル＋時刻の小さなテーマ連動カードを出す。 */
-    .timeline-activity:hover {
-        z-index: 20;
-        overflow: visible;
-    }
-
     .timeline-activity:hover .timeline-activity-name,
     .timeline-activity:hover .timeline-activity-time {
         position: absolute;
