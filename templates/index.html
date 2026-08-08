@@ -145,14 +145,15 @@
                         </select>
                     </div>
 
-                    <div class="setting-field">
-                        <label for="setting-accent-color">
+                    <div class="setting-field setting-field-accent">
+                        <span class="setting-label">
                             ACCENT COLOR
-                        </label>
+                        </span>
 
-                        <select
-                            id="setting-accent-color"
-                            name="accent_color"
+                        <div
+                            class="accent-choice-list"
+                            role="radiogroup"
+                            aria-label="Accent color"
                         >
                             {% for value, label in [
                                 ("cyan", "Cyan"),
@@ -162,16 +163,30 @@
                                 ("orange", "Orange"),
                                 ("none", "None")
                             ] %}
-                                <option
-                                    value="{{ value }}"
-                                    {% if settings["accent_color"] == value %}
-                                        selected
-                                    {% endif %}
+                                <label
+                                    class="accent-choice"
+                                    data-accent-value="{{ value }}"
                                 >
-                                    {{ label }}
-                                </option>
+                                    <input
+                                        type="radio"
+                                        name="accent_color"
+                                        value="{{ value }}"
+                                        {% if settings["accent_color"] == value %}
+                                            checked
+                                        {% endif %}
+                                    >
+
+                                    <span
+                                        class="accent-choice-dot"
+                                        aria-hidden="true"
+                                    ></span>
+
+                                    <span class="accent-choice-name">
+                                        {{ label }}
+                                    </span>
+                                </label>
                             {% endfor %}
-                        </select>
+                        </div>
                     </div>
                 </div>
 
