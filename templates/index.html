@@ -526,11 +526,13 @@
                                     <div
                                         class="timeline-plan"
                                         style="
-                                            top: {{ schedule['start_percent'] }}%;
-                                            height: {{ schedule['height_percent'] }}%;
-                                            left: {{ schedule['lane_left_percent'] }}%;
-                                            width: calc({{ schedule['lane_width_percent'] }}% - 3px);
+                                            --schedule-top: {{ schedule['start_percent'] }}%;
+                                            --schedule-height: {{ schedule['height_percent'] }}%;
+                                            --schedule-left: {{ schedule['lane_left_percent'] }}%;
+                                            --schedule-width: {{ schedule['lane_width_percent'] }}%;
                                         "
+                                        data-lane="{{ schedule['lane_index'] }}"
+                                        data-lane-count="{{ schedule['lane_count'] }}"
                                     >
                                         <div class="timeline-plan-name">
                                             {{ schedule["name"] }}
@@ -568,7 +570,7 @@
             <header class="schedule-dialog-header">
                 <div class="schedule-dialog-title">
                     <h2>ADD SCHEDULE</h2>
-                    <span>今日の予定を手動で追加</span>
+                    <span>予定を手動で追加</span>
                 </div>
 
                 <button
@@ -598,30 +600,91 @@
                     >
                 </label>
 
-                <div class="schedule-time-grid">
-                    <label class="schedule-field">
-                        <span>START</span>
-                        <span class="schedule-time-input-shell">
-                            <input
-                                id="schedule-start-time"
-                                type="time"
-                                name="start_time"
-                                required
-                            >
-                        </span>
-                    </label>
+                <label class="schedule-field">
+                    <span>DATE</span>
+                    <span class="schedule-date-input-shell">
+                        <input
+                            id="schedule-date"
+                            type="date"
+                            name="schedule_date"
+                            value="{{ today_date }}"
+                            required
+                        >
+                    </span>
+                </label>
 
-                    <label class="schedule-field">
-                        <span>END</span>
-                        <span class="schedule-time-input-shell">
-                            <input
-                                id="schedule-end-time"
-                                type="time"
-                                name="end_time"
+                <div class="schedule-time-grid">
+                    <fieldset class="schedule-clock-field">
+                        <legend>START</legend>
+
+                        <div class="schedule-clock-selects">
+                            <select
+                                id="schedule-start-hour"
+                                name="start_hour"
+                                aria-label="開始時"
                                 required
                             >
-                        </span>
-                    </label>
+                                <option value="" selected>--</option>
+                                {% for hour in range(24) %}
+                                    <option value="{{ hour }}">
+                                        {{ "%02d"|format(hour) }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+
+                            <span class="schedule-clock-separator">:</span>
+
+                            <select
+                                id="schedule-start-minute"
+                                name="start_minute"
+                                aria-label="開始分"
+                                required
+                            >
+                                <option value="" selected>--</option>
+                                {% for minute in range(0, 60, 10) %}
+                                    <option value="{{ minute }}">
+                                        {{ "%02d"|format(minute) }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </fieldset>
+
+                    <fieldset class="schedule-clock-field">
+                        <legend>END</legend>
+
+                        <div class="schedule-clock-selects">
+                            <select
+                                id="schedule-end-hour"
+                                name="end_hour"
+                                aria-label="終了時"
+                                required
+                            >
+                                <option value="" selected>--</option>
+                                {% for hour in range(24) %}
+                                    <option value="{{ hour }}">
+                                        {{ "%02d"|format(hour) }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+
+                            <span class="schedule-clock-separator">:</span>
+
+                            <select
+                                id="schedule-end-minute"
+                                name="end_minute"
+                                aria-label="終了分"
+                                required
+                            >
+                                <option value="" selected>--</option>
+                                {% for minute in range(0, 60, 10) %}
+                                    <option value="{{ minute }}">
+                                        {{ "%02d"|format(minute) }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </fieldset>
                 </div>
 
                 <div class="schedule-dialog-actions">
@@ -823,8 +886,10 @@
             const cancelButton = document.getElementById("schedule-dialog-cancel");
             const form = document.getElementById("schedule-form");
             const nameInput = document.getElementById("schedule-name");
-            const startInput = document.getElementById("schedule-start-time");
-            const endInput = document.getElementById("schedule-end-time");
+            const startHour = document.getElementById("schedule-start-hour");
+            const startMinute = document.getElementById("schedule-start-minute");
+            const endHour = document.getElementById("schedule-end-hour");
+            const endMinute = document.getElementById("schedule-end-minute");
 
             if (
                 !dialog
@@ -832,8 +897,10 @@
                 || !closeButton
                 || !cancelButton
                 || !form
-                || !startInput
-                || !endInput
+                || !startHour
+                || !startMinute
+                || !endHour
+                || !endMinute
             ) {
                 return;
             }
@@ -859,28 +926,51 @@
                 }
             });
 
+            function getSelectedMinutes(hourSelect, minuteSelect) {
+                if (!hourSelect.value || !minuteSelect.value) {
+                    return null;
+                }
+
+                return (
+                    Number(hourSelect.value) * 60
+                    + Number(minuteSelect.value)
+                );
+            }
+
             function validateScheduleTimes() {
-                endInput.setCustomValidity("");
+                endMinute.setCustomValidity("");
+
+                const start = getSelectedMinutes(
+                    startHour,
+                    startMinute
+                );
+                const end = getSelectedMinutes(
+                    endHour,
+                    endMinute
+                );
 
                 if (
-                    startInput.value
-                    && endInput.value
-                    && endInput.value <= startInput.value
+                    start !== null
+                    && end !== null
+                    && end <= start
                 ) {
-                    endInput.setCustomValidity(
+                    endMinute.setCustomValidity(
                         "終了時刻は開始時刻より後にしてください。"
                     );
                 }
             }
 
-            startInput.addEventListener(
-                "input",
-                validateScheduleTimes
-            );
-            endInput.addEventListener(
-                "input",
-                validateScheduleTimes
-            );
+            [
+                startHour,
+                startMinute,
+                endHour,
+                endMinute
+            ].forEach(select => {
+                select.addEventListener(
+                    "change",
+                    validateScheduleTimes
+                );
+            });
 
             form.addEventListener("submit", event => {
                 validateScheduleTimes();
