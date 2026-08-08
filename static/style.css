@@ -68,9 +68,9 @@ input {
 ======================================== */
 
 .app-container {
-    width: min(1100px, calc(100% - 32px));
+    width: min(1600px, calc(100% - 40px));
     margin: 0 auto;
-    padding: 32px 0 64px;
+    padding: 24px 0 64px;
 }
 
 
@@ -103,6 +103,86 @@ input {
         0 0 18px rgba(82, 231, 255, 0.42);
 }
 
+/* ========================================
+   PCダッシュボード
+======================================== */
+
+.dashboard {
+    display: grid;
+
+    grid-template-columns:
+        minmax(320px, 420px)
+        minmax(0, 1fr);
+
+    gap: 24px;
+
+    align-items: start;
+}
+
+
+/* ========================================
+   左側：現在の活動
+======================================== */
+
+.current-column {
+    min-width: 0;
+}
+
+.current-panel {
+    position: sticky;
+    top: 24px;
+
+    min-height: 360px;
+    padding: 36px 24px;
+}
+
+
+/* 左側に置くので少しサイズ調整 */
+
+.current-task {
+    font-size: clamp(28px, 3vw, 48px);
+}
+
+.digital-clock {
+    font-size: clamp(48px, 5vw, 82px);
+    letter-spacing: 0.04em;
+}
+
+
+/* ========================================
+   右側
+======================================== */
+
+.main-column {
+    min-width: 0;
+}
+
+
+/* 操作パネル + TODO */
+
+.action-grid {
+    display: grid;
+
+    grid-template-columns:
+        minmax(300px, 0.8fr)
+        minmax(420px, 1.2fr);
+
+    gap: 24px;
+
+    align-items: start;
+}
+
+
+/* 今まで縦配置用についていた余白を消す */
+
+.control-panel,
+.todo-panel {
+    margin-top: 0;
+}
+
+.history-panel {
+    margin-top: 24px;
+}
 
 /* ========================================
    現在のタスク
@@ -189,7 +269,7 @@ input {
     color: var(--cyan-bright);
 
     font-size: clamp(30px, 6vw, 68px);
-    font-weight: 600;
+    font-weight: 100;
     line-height: 1.18;
 
     overflow-wrap: anywhere;
@@ -266,6 +346,7 @@ input {
 ======================================== */
 
 .control-panel,
+.todo-panel,
 .history-panel {
     margin-top: 24px;
     padding: 24px;
@@ -614,10 +695,101 @@ tbody tr:hover {
     color: var(--muted);
 }
 
+/* ========================================
+   TODO
+======================================== */
+
+.todo-add-form {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.todo-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.todo-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+
+    min-height: 60px;
+    padding: 10px 4px;
+
+    border-bottom: 1px solid rgba(82, 231, 255, 0.12);
+}
+
+.todo-item:last-child {
+    border-bottom: none;
+}
+
+.todo-check-form {
+    flex: 0 0 auto;
+}
+
+.todo-check-form input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+
+    accent-color: var(--cyan);
+    cursor: pointer;
+}
+
+.todo-title {
+    flex: 1;
+
+    color: var(--text);
+    font-size: 15px;
+
+    overflow-wrap: anywhere;
+}
+
+.todo-start-form {
+    flex: 0 0 auto;
+}
+
+.todo-start-button {
+    min-width: 90px;
+    padding: 10px 16px;
+}
+
+.todo-completed .todo-title {
+    color: var(--muted);
+    text-decoration: line-through;
+    opacity: 0.65;
+}
+
+.todo-start-button:disabled {
+    color: var(--muted);
+    background: rgba(0, 8, 12, 0.45);
+
+    border-color: rgba(82, 231, 255, 0.14);
+
+    cursor: default;
+    opacity: 0.55;
+    box-shadow: none;
+}
 
 /* ========================================
-   スマートフォン表示
+   横幅に応じた表示
 ======================================== */
+@media (max-width: 1200px) {
+    .action-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 800px) {
+    .dashboard {
+        grid-template-columns: 1fr;
+    }
+
+    .current-panel {
+        position: static;
+    }
+}
 
 @media (max-width: 640px) {
     body {
@@ -668,5 +840,283 @@ tbody tr:hover {
     th,
     td {
         padding: 12px 10px;
+    }
+    .todo-add-form {
+        flex-direction: column;
+    }
+
+    .todo-add-form button {
+        width: 100%;
+    }
+
+    .todo-start-button {
+        width: auto;
+    }
+}
+
+/* ========================================
+   PC向けコンパクトダッシュボード調整
+======================================== */
+
+@media (min-width: 801px) {
+
+    /* 全体 */
+    .app-container {
+        width: min(1600px, calc(100% - 40px));
+        padding-top: 18px;
+    }
+
+    .app-header {
+        margin-bottom: 18px;
+    }
+
+
+    /* ========================================
+       2カラム
+    ======================================== */
+
+    .dashboard {
+        grid-template-columns:
+            minmax(330px, 390px)
+            minmax(0, 1fr);
+
+        gap: 18px;
+    }
+
+    .action-grid {
+        grid-template-columns:
+            minmax(320px, 0.8fr)
+            minmax(460px, 1.2fr);
+
+        gap: 18px;
+    }
+
+
+    /* ========================================
+       左 CURRENT ACTIVITY
+    ======================================== */
+
+    .current-panel {
+        min-height: 340px;
+        padding: 32px 20px;
+
+        position: sticky;
+        top: 18px;
+    }
+
+    .panel-label {
+        margin-bottom: 22px;
+        font-size: 11px;
+    }
+
+    .current-task {
+        margin-bottom: 24px;
+
+        font-size: clamp(32px, 3vw, 48px);
+    }
+
+    /*
+     * ここ重要
+     * 今は時計が大きすぎて切れている
+     */
+    .digital-clock {
+        width: 100%;
+
+        font-size: clamp(42px, 4vw, 64px);
+        letter-spacing: 0.02em;
+
+        white-space: nowrap;
+    }
+
+    .started-at {
+        margin-top: 24px;
+        font-size: 11px;
+    }
+
+
+    /* ========================================
+       右側カード共通
+    ======================================== */
+
+    .control-panel,
+    .todo-panel,
+    .history-panel {
+        padding: 18px;
+
+        border-radius: 10px;
+    }
+
+    .control-panel,
+    .todo-panel {
+        margin-top: 0;
+    }
+
+    .history-panel {
+        margin-top: 18px;
+    }
+
+
+    /* ========================================
+       見出し
+    ======================================== */
+
+    .section-heading {
+        gap: 10px;
+        margin-bottom: 14px;
+    }
+
+    .section-heading h2 {
+        font-size: 14px;
+        letter-spacing: 0.15em;
+    }
+
+    .section-heading span {
+        font-size: 10px;
+    }
+
+
+    /* ========================================
+       自由入力
+    ======================================== */
+
+    .start-form label {
+        margin-bottom: 6px;
+        font-size: 11px;
+    }
+
+    .form-row {
+        gap: 8px;
+    }
+
+    input[type="text"] {
+        padding: 9px 11px;
+
+        border-radius: 6px;
+
+        font-size: 12px;
+    }
+
+
+    /* ========================================
+       右側のボタン全般
+    ======================================== */
+
+    .main-column button {
+        min-width: 78px;
+
+        padding: 9px 14px;
+
+        border-radius: 6px;
+
+        font-size: 11px;
+        letter-spacing: 0.1em;
+    }
+
+
+    /* ========================================
+       QUICK START
+    ======================================== */
+
+    .quick-start {
+        margin-top: 14px;
+        padding-top: 14px;
+    }
+
+    .quick-start-label {
+        margin-bottom: 8px;
+        font-size: 10px;
+    }
+
+    .quick-start-form {
+        display: grid;
+
+        grid-template-columns:
+            repeat(3, minmax(0, 1fr));
+
+        gap: 7px;
+    }
+
+    .quick-start-button {
+        min-width: 0 !important;
+        width: 100%;
+
+        padding: 8px 8px !important;
+
+        font-size: 11px !important;
+    }
+
+
+    /* ========================================
+       TODO
+    ======================================== */
+
+    .todo-add-form {
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+
+    .todo-item {
+        min-height: 42px;
+
+        gap: 9px;
+
+        padding: 6px 4px;
+    }
+
+    .todo-check-form input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+    }
+
+    .todo-title {
+        font-size: 12px;
+    }
+
+    .todo-start-button {
+        min-width: 68px !important;
+
+        padding: 7px 10px !important;
+
+        font-size: 10px !important;
+    }
+
+
+    /* ========================================
+       ACTIVITY LOG
+    ======================================== */
+
+    .activity-day {
+        margin-top: 14px;
+    }
+
+    .activity-date {
+        gap: 8px;
+
+        margin-bottom: 6px;
+        padding-bottom: 7px;
+
+        font-size: 16px;
+    }
+
+    .activity-date::before {
+        width: 5px;
+        height: 5px;
+    }
+
+    th,
+    td {
+        padding: 8px 9px;
+    }
+
+    th {
+        font-size: 10px;
+    }
+
+    td {
+        font-size: 11px;
+    }
+
+    .activity-name {
+        font-size: 11px;
     }
 }

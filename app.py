@@ -27,10 +27,23 @@ def init_db():
             )
             """
         )
+        connection.execute(
+            """
+            CREATE TABLE IF NOT EXISTS todos (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                title TEXT NOT NULL,
+                todo_date TEXT NOT NULL,
+                completed_at TEXT,
+                created_at TEXT NOT NULL
+            )
+            """
+)
 
 
 @app.get("/")
 def index():
+    today = datetime.now().astimezone().date().isoformat()
+
     with get_db() as connection:
         current_activity_row = connection.execute(
             """
@@ -50,6 +63,18 @@ def index():
             ORDER BY started_at DESC
             LIMIT 50
             """
+        ).fetchall()
+        
+        todo_rows = connection.execute(
+            """
+            SELECT id, title, todo_date, completed_at, created_at
+            FROM todos
+            WHERE todo_date = ?
+            ORDER BY
+                CASE WHEN completed_at IS NULL THEN 0 ELSE 1 END,
+                created_at ASC
+            """,
+            (today,),
         ).fetchall()
 
     current_activity = add_display_values(
@@ -80,11 +105,13 @@ def index():
             )
 
         activity_groups[-1]["activities"].append(activity)
+        todos = [dict(todo) for todo in todo_rows]
 
     return render_template(
         "index.html",
         current_activity=current_activity,
         activity_groups=activity_groups,
+        todos=todos,
     )
 
 
@@ -119,6 +146,59 @@ def start_activity():
 
     return redirect(url_for("index"))
 
+@app.post("/todo/add")
+def add_todo():
+    title = request.form.get("title", "").strip()
+
+    if not title:
+        return redirect(url_for("index"))
+
+    now = datetime.now().astimezone()
+    today = now.date().isoformat()
+
+    with get_db() as connection:
+        connection.execute(
+            """
+            INSERT INTO todos (
+                title,
+                todo_date,
+                created_at
+            )
+            VALUES (?, ?, ?)
+            """,
+            (
+                title,
+                today,
+                now.isoformat(timespec="seconds"),
+            ),
+        )
+
+    return redirect(url_for("index"))
+
+@app.post("/todo/<int:todo_id>/complete")
+def complete_todo(todo_id):
+    is_completed = "completed" in request.form
+
+    completed_at = None
+
+    if is_completed:
+        completed_at = (
+            datetime.now()
+            .astimezone()
+            .isoformat(timespec="seconds")
+        )
+
+    with get_db() as connection:
+        connection.execute(
+            """
+            UPDATE todos
+            SET completed_at = ?
+            WHERE id = ?
+            """,
+            (completed_at, todo_id),
+        )
+
+    return redirect(url_for("index"))
 
 init_db()
 

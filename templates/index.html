@@ -28,170 +28,398 @@
             <h1>DAILY TIMELINE</h1>
         </header>
 
-        <section class="current-panel">
-            <p class="panel-label">CURRENT ACTIVITY</p>
+        <div class="dashboard">
 
-            {% if current_activity %}
-                <h2 class="current-task">
-                    {{ current_activity["name"] }}
-                </h2>
-
-                <div
-                    id="elapsed-time"
-                    class="digital-clock"
-                    data-started-at="{{ current_activity['started_at'] }}"
-                >
-                    00:00:00
-                </div>
-
-                <p class="started-at">
-                    STARTED
-                    <span>
-                        {{ current_activity["started_at_display"] }}
-                    </span>
-                </p>
-            {% else %}
-                <h2 class="current-task inactive">
-                    NO ACTIVITY
-                </h2>
-
-                <div class="digital-clock inactive">
-                    00:00:00
-                </div>
-
-                <p class="started-at">
-                    新しい活動を開始してください
-                </p>
-            {% endif %}
-        </section>
-
-        <section class="control-panel">
-            <form
-                method="post"
-                action="{{ url_for('start_activity') }}"
-                class="start-form"
-            >
-                <label for="task-name">
-                    次に始めること
-                </label>
-
-                <div class="form-row">
-                    <input
-                        type="text"
-                        id="task-name"
-                        name="task_name"
-                        placeholder="例：Daily Timelineの開発"
-                        autocomplete="off"
-                        required
-                    >
-
-                    <button type="submit">
-                        START
-                    </button>
-                </div>
-            </form>
-                <div class="quick-start">
-                    <p class="quick-start-label">
-                        QUICK START
+            <!-- ========================================
+                 左側：現在の活動
+            ========================================= -->
+            <aside class="current-column">
+                <section class="current-panel">
+                    <p class="panel-label">
+                        CURRENT ACTIVITY
                     </p>
 
-                    <form
-                        method="post"
-                        action="{{ url_for('start_activity') }}"
-                        class="quick-start-form"
-                    >
-                        {% for task in ["寝る", "仕事", "通話", "ゲーム", "開発", "外出"] %}
-                            <button
-                                type="submit"
-                                name="task_name"
-                                value="{{ task }}"
-                                class="quick-start-button"
-                                {% if current_activity
-                                    and current_activity["name"] == task %}
-                                    disabled
-                                {% endif %}
+                    {% if current_activity %}
+                        <h2 class="current-task">
+                            {{ current_activity["name"] }}
+                        </h2>
+
+                        <div
+                            id="elapsed-time"
+                            class="digital-clock"
+                            data-started-at="{{ current_activity['started_at'] }}"
+                        >
+                            00:00:00
+                        </div>
+
+                        <p class="started-at">
+                            STARTED
+                            <span>
+                                {{ current_activity["started_at_display"] }}
+                            </span>
+                        </p>
+
+                    {% else %}
+                        <h2 class="current-task inactive">
+                            NO ACTIVITY
+                        </h2>
+
+                        <div class="digital-clock inactive">
+                            00:00:00
+                        </div>
+
+                        <p class="started-at">
+                            新しい活動を開始してください
+                        </p>
+                    {% endif %}
+                </section>
+            </aside>
+
+
+            <!-- ========================================
+                 右側
+            ========================================= -->
+            <div class="main-column">
+
+                <!-- 操作 + TODO -->
+                <div class="action-grid">
+
+                    <!-- ========================================
+                         活動開始
+                    ========================================= -->
+                    <section class="control-panel">
+
+                        <form
+                            method="post"
+                            action="{{ url_for('start_activity') }}"
+                            class="start-form"
+                        >
+                            <label for="task-name">
+                                次に始めること
+                            </label>
+
+                            <div class="form-row">
+                                <input
+                                    type="text"
+                                    id="task-name"
+                                    name="task_name"
+                                    placeholder="例：Daily Timelineの開発"
+                                    autocomplete="off"
+                                    required
+                                >
+
+                                <button type="submit">
+                                    START
+                                </button>
+                            </div>
+                        </form>
+
+
+                        <!-- QUICK START -->
+                        <div class="quick-start">
+                            <p class="quick-start-label">
+                                QUICK START
+                            </p>
+
+                            <form
+                                method="post"
+                                action="{{ url_for('start_activity') }}"
+                                class="quick-start-form"
                             >
-                                {{ task }}
-                            </button>
-                        {% endfor %}
-                    </form>
-                </div>
-        </section>
+                                {% for task in [
+                                    "寝る",
+                                    "仕事",
+                                    "通話",
+                                    "ゲーム",
+                                    "開発",
+                                    "外出"
+                                ] %}
+                                    <button
+                                        type="submit"
+                                        name="task_name"
+                                        value="{{ task }}"
+                                        class="quick-start-button"
 
-        <section class="history-panel">
-            <div class="section-heading">
-                <h2>ACTIVITY LOG</h2>
-                <span>最近の記録</span>
-            </div>
-
-            {% if activity_groups %}
-                {% for group in activity_groups %}
-                    <section class="activity-day">
-                        <h3 class="activity-date">
-                            {{ group["date_display"] }}
-                        </h3>
-
-                        <div class="table-wrapper">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>やったこと</th>
-                                        <th>開始時刻</th>
-                                        <th>終了時刻</th>
-                                    </tr>
-                                </thead>
-
-                                <tbody>
-                                    {% for activity in group["activities"] %}
-                                        <tr>
-                                            <td class="activity-name">
-                                                {{ activity["name"] }}
-                                            </td>
-
-                                            <td>
-                                                {{ activity["started_time_display"] }}
-                                            </td>
-
-                                            <td>
-                                                {{ activity["ended_time_display"] }}
-                                            </td>
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+                                        {% if
+                                            current_activity
+                                            and current_activity["name"] == task
+                                        %}
+                                            disabled
+                                        {% endif %}
+                                    >
+                                        {{ task }}
+                                    </button>
+                                {% endfor %}
+                            </form>
                         </div>
                     </section>
-                {% endfor %}
-            {% else %}
-                <p class="empty-message">
-                    終了した記録はまだありません。
-                </p>
-            {% endif %}
-        </section>
+
+
+                    <!-- ========================================
+                         TODAY'S TODO
+                    ========================================= -->
+                    <section class="todo-panel">
+                        <div class="section-heading">
+                            <h2>TODAY'S TODO</h2>
+                            <span>今日やること</span>
+                        </div>
+
+
+                        <!-- TODO追加 -->
+                        <form
+                            method="post"
+                            action="{{ url_for('add_todo') }}"
+                            class="todo-add-form"
+                        >
+                            <input
+                                type="text"
+                                name="title"
+                                placeholder="今日やることを追加"
+                                autocomplete="off"
+                                required
+                            >
+
+                            <button type="submit">
+                                ADD
+                            </button>
+                        </form>
+
+
+                        <!-- TODO一覧 -->
+                        <div class="todo-list">
+                            {% for todo in todos %}
+
+                                <div
+                                    class="
+                                        todo-item
+                                        {% if todo['completed_at'] %}
+                                            todo-completed
+                                        {% endif %}
+                                    "
+                                >
+
+                                    <!-- 完了チェック -->
+                                    <form
+                                        method="post"
+                                        action="{{ url_for(
+                                            'complete_todo',
+                                            todo_id=todo['id']
+                                        ) }}"
+                                        class="todo-check-form"
+                                    >
+                                        <input
+                                            type="checkbox"
+                                            name="completed"
+
+                                            onchange="
+                                                this.form.requestSubmit()
+                                            "
+
+                                            {% if todo["completed_at"] %}
+                                                checked
+                                            {% endif %}
+                                        >
+                                    </form>
+
+
+                                    <!-- TODO名 -->
+                                    <span class="todo-title">
+                                        {{ todo["title"] }}
+                                    </span>
+
+
+                                    <!-- TODOから活動開始 -->
+                                    <form
+                                        method="post"
+                                        action="{{ url_for('start_activity') }}"
+                                        class="todo-start-form"
+                                    >
+                                        <input
+                                            type="hidden"
+                                            name="task_name"
+                                            value="{{ todo['title'] }}"
+                                        >
+
+                                        <button
+                                            type="submit"
+                                            class="todo-start-button"
+
+                                            {% if
+                                                todo["completed_at"]
+                                                or (
+                                                    current_activity
+                                                    and
+                                                    current_activity["name"]
+                                                    == todo["title"]
+                                                )
+                                            %}
+                                                disabled
+                                            {% endif %}
+                                        >
+                                            START
+                                        </button>
+                                    </form>
+
+                                </div>
+
+                            {% else %}
+
+                                <p class="empty-message">
+                                    今日のTODOはありません。
+                                </p>
+
+                            {% endfor %}
+                        </div>
+                    </section>
+
+                </div>
+
+
+                <!-- ========================================
+                     ACTIVITY LOG
+                ========================================= -->
+                <section class="history-panel">
+                    <div class="section-heading">
+                        <h2>ACTIVITY LOG</h2>
+                        <span>最近の記録</span>
+                    </div>
+
+                    {% if activity_groups %}
+
+                        {% for group in activity_groups %}
+                            <section class="activity-day">
+
+                                <h3 class="activity-date">
+                                    {{ group["date_display"] }}
+                                </h3>
+
+                                <div class="table-wrapper">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>やったこと</th>
+                                                <th>開始時刻</th>
+                                                <th>終了時刻</th>
+                                            </tr>
+                                        </thead>
+
+                                        <tbody>
+                                            {% for activity
+                                                in group["activities"] %}
+                                                <tr>
+                                                    <td class="activity-name">
+                                                        {{ activity["name"] }}
+                                                    </td>
+
+                                                    <td>
+                                                        {{
+                                                            activity[
+                                                                "started_time_display"
+                                                            ]
+                                                        }}
+                                                    </td>
+
+                                                    <td>
+                                                        {{
+                                                            activity[
+                                                                "ended_time_display"
+                                                            ]
+                                                        }}
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                            </section>
+                        {% endfor %}
+
+                    {% else %}
+
+                        <p class="empty-message">
+                            終了した記録はまだありません。
+                        </p>
+
+                    {% endif %}
+                </section>
+
+            </div>
+        </div>
     </main>
+
+
+    <!-- ========================================
+         JavaScript
+    ========================================= -->
+
+    <script>
+        /*
+         * POSTして画面が再読込されても
+         * スクロール位置を維持する
+         */
+        document.addEventListener("submit", () => {
+            sessionStorage.setItem(
+                "dailyTimelineScrollY",
+                window.scrollY
+            );
+        });
+
+
+        window.addEventListener("DOMContentLoaded", () => {
+            const savedScrollY =
+                sessionStorage.getItem(
+                    "dailyTimelineScrollY"
+                );
+
+            if (savedScrollY !== null) {
+                window.scrollTo(
+                    0,
+                    Number(savedScrollY)
+                );
+
+                sessionStorage.removeItem(
+                    "dailyTimelineScrollY"
+                );
+            }
+        });
+    </script>
+
 
     {% if current_activity %}
         <script>
             const elapsedElement =
-                document.getElementById("elapsed-time");
-
-            const startedAt =
-                new Date(elapsedElement.dataset.startedAt);
-
-            function updateElapsedTime() {
-                const elapsedMilliseconds = Math.max(
-                    0,
-                    Date.now() - startedAt.getTime()
+                document.getElementById(
+                    "elapsed-time"
                 );
 
+            const startedAt =
+                new Date(
+                    elapsedElement.dataset.startedAt
+                );
+
+            function updateElapsedTime() {
+                const elapsedMilliseconds =
+                    Math.max(
+                        0,
+                        Date.now()
+                        - startedAt.getTime()
+                    );
+
                 const totalSeconds =
-                    Math.floor(elapsedMilliseconds / 1000);
+                    Math.floor(
+                        elapsedMilliseconds / 1000
+                    );
 
                 const hours =
-                    Math.floor(totalSeconds / 3600);
+                    Math.floor(
+                        totalSeconds / 3600
+                    );
 
                 const minutes =
-                    Math.floor((totalSeconds % 3600) / 60);
+                    Math.floor(
+                        (totalSeconds % 3600) / 60
+                    );
 
                 const seconds =
                     totalSeconds % 60;
@@ -201,14 +429,20 @@
                     minutes,
                     seconds
                 ]
-                    .map(value =>
-                        String(value).padStart(2, "0")
+                    .map(
+                        value =>
+                            String(value)
+                                .padStart(2, "0")
                     )
                     .join(":");
             }
 
             updateElapsedTime();
-            setInterval(updateElapsedTime, 1000);
+
+            setInterval(
+                updateElapsedTime,
+                1000
+            );
         </script>
     {% endif %}
 </body>
