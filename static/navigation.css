@@ -171,9 +171,23 @@
     border-radius: 8px;
 }
 
+.menu-link-button {
+    top: 0 !important;
+
+    width: 100%;
+
+    font: inherit;
+    text-align: left;
+
+    background: transparent !important;
+    box-shadow: none !important;
+
+    cursor: pointer;
+}
+
 .menu-link:hover {
     color: var(--accent-foreground);
-    background: var(--accent-06);
+    background: var(--accent-06) !important;
     border-color: var(--accent-22);
 }
 
@@ -457,13 +471,134 @@ html[data-theme="light"]
 
 
 /* ========================================
-   TEXTURE OVERRIDES FOR MENU
+   ACTIVITY LOG MODAL
 ======================================== */
 
-html[data-texture="flat"] .app-menu {
+.activity-log-dialog {
+    width: min(820px, calc(100vw - 48px));
+    max-width: none;
+    max-height: min(82vh, 860px);
+    padding: 0;
+
+    color: var(--theme-text);
+    background: transparent;
+
+    border: none;
+    border-radius: 12px;
+
+    overflow: visible;
+}
+
+.activity-log-dialog::backdrop {
+    background: rgba(0, 0, 0, 0.68);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+}
+
+.activity-log-dialog-shell {
+    max-height: min(82vh, 860px);
+
+    display: flex;
+    flex-direction: column;
+
+    background: var(--theme-panel-solid);
+    border: 1px solid var(--theme-border-strong);
+    border-radius: 12px;
+
+    overflow: hidden;
+
+    box-shadow:
+        0 22px 70px rgba(0, 0, 0, 0.46),
+        0 0 0 1px var(--accent-08);
+}
+
+.activity-log-dialog-header {
+    padding: 16px 18px 14px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+
+    border-bottom: 1px solid var(--theme-divider);
+}
+
+.activity-log-dialog-header .section-heading {
+    margin: 0;
+}
+
+.activity-log-dialog-close {
+    width: 36px;
+    min-width: 36px !important;
+    height: 34px;
+    padding: 0 !important;
+
+    flex: 0 0 36px;
+
+    font-size: 19px !important;
+    line-height: 1;
+}
+
+.activity-log-dialog-content {
+    padding: 4px 18px 18px;
+    overflow-y: auto;
+
+    scrollbar-width: thin;
+    scrollbar-color:
+        var(--theme-border-strong)
+        var(--theme-divider);
+}
+
+.activity-log-dialog .activity-day {
+    margin-top: 18px;
+}
+
+.activity-log-dialog .activity-date {
+    margin-bottom: 7px;
+    padding-bottom: 7px;
+
+    font-size: 15px;
+}
+
+.activity-log-dialog table {
+    width: 100%;
+}
+
+.activity-log-dialog th,
+.activity-log-dialog td {
+    padding: 9px 8px;
+}
+
+.activity-log-dialog .activity-name {
+    font-size: 13px;
+}
+
+
+/* ========================================
+   TEXTURE OVERRIDES FOR MENU / MODAL
+======================================== */
+
+html[data-texture="glass"] .activity-log-dialog-shell {
+    background: color-mix(
+        in srgb,
+        var(--theme-panel-strong) 96%,
+        transparent
+    );
+
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+}
+
+html[data-texture="flat"] .app-menu,
+html[data-texture="flat"] .activity-log-dialog-shell {
     background: var(--theme-panel-solid);
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
+}
+
+html[data-texture="flat"] .activity-log-dialog-shell {
+    box-shadow:
+        0 18px 56px var(--theme-shadow);
 }
 
 html[data-texture="neumorphism"] .app-menu {
@@ -507,6 +642,15 @@ html[data-texture="neumorphism"] .current-time-widget {
         4px 4px 9px var(--neu-shadow);
 }
 
+html[data-texture="neumorphism"] .activity-log-dialog-shell {
+    background: var(--theme-background);
+    border: none;
+
+    box-shadow:
+        -10px -10px 24px var(--neu-highlight),
+        14px 14px 30px var(--neu-shadow);
+}
+
 
 @media (max-width: 700px) {
     .app-header {
@@ -532,5 +676,20 @@ html[data-texture="neumorphism"] .current-time-widget {
 
     .setting-field-accent > .setting-label {
         padding-top: 0;
+    }
+
+    .activity-log-dialog {
+        width: calc(100vw - 24px);
+        max-height: 88vh;
+    }
+
+    .activity-log-dialog-shell {
+        max-height: 88vh;
+    }
+
+    .activity-log-dialog-header,
+    .activity-log-dialog-content {
+        padding-left: 12px;
+        padding-right: 12px;
     }
 }
