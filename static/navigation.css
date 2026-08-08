@@ -48,6 +48,18 @@
     transform: none;
 
     flex: 0 0 auto;
+
+    color: var(--theme-text);
+    background: var(--theme-panel-strong);
+    border-color: var(--theme-border);
+}
+
+.current-time-widget span {
+    color: var(--theme-muted);
+}
+
+.current-time-widget strong {
+    color: var(--theme-text);
 }
 
 
@@ -287,6 +299,15 @@ html[data-texture="neumorphism"] .setting-field select {
     box-shadow:
         inset 3px 3px 7px var(--neu-shadow),
         inset -3px -3px 7px var(--neu-highlight);
+}
+
+html[data-texture="neumorphism"] .current-time-widget {
+    background: var(--theme-background);
+    border: none;
+
+    box-shadow:
+        -4px -4px 9px var(--neu-highlight),
+        4px 4px 9px var(--neu-shadow);
 }
 
 
