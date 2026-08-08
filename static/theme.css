@@ -1,0 +1,335 @@
+/* ========================================
+   THEME TOKENS
+   Settings実装時は、ここをテーマ設定の入口にする。
+======================================== */
+
+:root {
+    /* ========================================
+       ACCENT COLOR
+       動作確認するときは、この1行だけ変更する。
+       例: #ff5ca8 / #9b7cff / #7ee787 / #ff9f43
+    ======================================== */
+    --accent: #52e7ff;
+
+    /* accentから自動生成する派生色 */
+    --accent-bright:
+        color-mix(in srgb, var(--accent) 72%, white);
+
+    --accent-dark:
+        color-mix(in srgb, var(--accent) 62%, black);
+
+    --accent-04:
+        color-mix(in srgb, var(--accent) 4%, transparent);
+
+    --accent-06:
+        color-mix(in srgb, var(--accent) 6%, transparent);
+
+    --accent-08:
+        color-mix(in srgb, var(--accent) 8%, transparent);
+
+    --accent-10:
+        color-mix(in srgb, var(--accent) 10%, transparent);
+
+    --accent-12:
+        color-mix(in srgb, var(--accent) 12%, transparent);
+
+    --accent-16:
+        color-mix(in srgb, var(--accent) 16%, transparent);
+
+    --accent-22:
+        color-mix(in srgb, var(--accent) 22%, transparent);
+
+    --accent-30:
+        color-mix(in srgb, var(--accent) 30%, transparent);
+
+    --accent-40:
+        color-mix(in srgb, var(--accent) 40%, transparent);
+
+    --accent-55:
+        color-mix(in srgb, var(--accent) 55%, transparent);
+
+    --accent-70:
+        color-mix(in srgb, var(--accent) 70%, transparent);
+
+
+    /* ========================================
+       BASE THEME: DARK
+       後で Settings から theme を切り替える想定。
+    ======================================== */
+
+    --theme-background: #07090c;
+
+    --theme-text: #f1f3f5;
+    --theme-text-soft: #d9dde2;
+    --theme-muted: #9299a2;
+    --theme-disabled: #626973;
+
+    --theme-panel: rgba(12, 14, 18, 0.84);
+    --theme-panel-strong: rgba(9, 11, 14, 0.88);
+
+    --theme-control: #20242a;
+    --theme-control-hover: #2a3037;
+
+    --theme-input: rgba(0, 0, 0, 0.34);
+    --theme-input-focus: rgba(0, 0, 0, 0.48);
+
+    --theme-border: rgba(255, 255, 255, 0.12);
+    --theme-border-strong: rgba(255, 255, 255, 0.20);
+    --theme-divider: rgba(255, 255, 255, 0.08);
+
+    --theme-shadow: rgba(0, 0, 0, 0.34);
+
+
+    /* ========================================
+       既存CSSとの互換用エイリアス
+       古い --cyan 系も --accent に追従する。
+    ======================================== */
+
+    --background: var(--theme-background);
+
+    --text: var(--theme-text);
+    --muted: var(--theme-muted);
+
+    --border: var(--theme-border);
+    --border-bright: var(--theme-border-strong);
+
+    --glass-background: var(--theme-panel-strong);
+    --glass-background-light: var(--theme-panel);
+
+    --cyan: var(--accent);
+    --cyan-bright: var(--accent-bright);
+    --cyan-dark: var(--accent-dark);
+}
+
+
+/* ========================================
+   BASE THEME APPLICATION
+======================================== */
+
+body {
+    color: var(--theme-text);
+
+    background:
+        linear-gradient(
+            rgba(0, 0, 0, 0.52),
+            rgba(0, 0, 0, 0.72)
+        ),
+        url("images/background.png")
+        center center / cover
+        fixed
+        no-repeat;
+}
+
+.current-panel,
+.control-panel,
+.todo-panel,
+.history-panel,
+.timeline-panel {
+    background: var(--theme-panel);
+    border-color: var(--theme-border);
+
+    box-shadow:
+        0 10px 30px var(--theme-shadow),
+        inset 0 1px 0 rgba(255, 255, 255, 0.025);
+}
+
+.panel-label,
+.quick-start-label,
+.start-form label,
+.section-heading span,
+th,
+.timeline-hour-label,
+.timeline-activity-time,
+.started-at {
+    color: var(--theme-muted);
+}
+
+.current-task,
+.section-heading h2 {
+    color: var(--theme-text);
+    text-shadow: none;
+}
+
+.started-at span,
+.todo-title,
+.activity-name,
+td {
+    color: var(--theme-text-soft);
+}
+
+.activity-date {
+    color: var(--theme-text-soft);
+    border-bottom-color: var(--theme-border);
+    text-shadow: none;
+}
+
+.todo-item,
+td {
+    border-bottom-color: var(--theme-divider);
+}
+
+.todo-completed .todo-title {
+    color: var(--theme-disabled);
+}
+
+input[type="text"] {
+    color: var(--theme-text);
+    caret-color: var(--accent);
+
+    background: var(--theme-input);
+    border-color: var(--theme-border);
+}
+
+input[type="text"]::placeholder {
+    color: var(--theme-disabled);
+}
+
+input[type="text"]:focus {
+    background: var(--theme-input-focus);
+    border-color: var(--accent-70);
+
+    box-shadow:
+        0 0 0 2px var(--accent-08);
+}
+
+button {
+    color: var(--theme-text);
+    background: var(--theme-control);
+    border-color: var(--theme-border-strong);
+    box-shadow: none;
+}
+
+button:hover {
+    color: #ffffff;
+    background: var(--theme-control-hover);
+    border-color: var(--accent-55);
+
+    box-shadow:
+        0 0 0 1px var(--accent-08);
+}
+
+.quick-start {
+    border-top-color: var(--theme-border);
+}
+
+.quick-start-button {
+    color: var(--theme-text-soft);
+    background: rgba(255, 255, 255, 0.035);
+    border-color: var(--theme-border-strong);
+    box-shadow: none;
+}
+
+.quick-start-button:disabled,
+.todo-start-button:disabled {
+    color: var(--theme-disabled);
+    background: rgba(255, 255, 255, 0.025);
+    border-color: var(--theme-divider);
+    box-shadow: none;
+}
+
+
+/* ========================================
+   ACCENT APPLICATION
+   水色などの具体色はここに書かず --accent を使う。
+======================================== */
+
+::selection {
+    color: #061014;
+    background: var(--accent);
+}
+
+.app-header h1 {
+    color: var(--accent);
+
+    text-shadow:
+        0 0 10px var(--accent-30);
+}
+
+.digital-clock {
+    color: var(--accent);
+
+    text-shadow:
+        0 0 4px var(--accent-70),
+        0 0 12px var(--accent-40),
+        0 0 28px var(--accent-22);
+}
+
+.activity-date::before {
+    background: var(--accent);
+
+    box-shadow:
+        0 0 8px var(--accent-40);
+}
+
+.start-form button,
+.todo-add-form button,
+.todo-start-button {
+    color: #061014;
+    background: var(--accent);
+    border-color: var(--accent-bright);
+
+    box-shadow:
+        0 0 12px var(--accent-16);
+}
+
+.start-form button:hover,
+.todo-add-form button:hover,
+.todo-start-button:hover {
+    color: #061014;
+    background: var(--accent-bright);
+    border-color: var(--accent-bright);
+}
+
+.quick-start-button:hover {
+    color: var(--accent-bright);
+    background: var(--accent-06);
+    border-color: var(--accent-55);
+}
+
+.todo-check-form input[type="checkbox"] {
+    accent-color: var(--accent);
+}
+
+.timeline-hour-line {
+    background: var(--theme-divider);
+}
+
+.timeline-activity {
+    color: var(--theme-text);
+    background: rgba(255, 255, 255, 0.055);
+    border-left-color: rgba(255, 255, 255, 0.24);
+    box-shadow: none;
+}
+
+.timeline-activity.is-current {
+    background: var(--accent-08);
+    border-left-color: var(--accent);
+
+    box-shadow:
+        inset 0 0 0 1px var(--accent-08);
+}
+
+.timeline-now {
+    background: var(--accent);
+
+    box-shadow:
+        0 0 8px var(--accent-40);
+}
+
+.timeline-now::before {
+    background: var(--accent);
+
+    box-shadow:
+        0 0 6px var(--accent-70);
+}
+
+.timeline-now span {
+    color: var(--accent-bright);
+    background: rgba(7, 9, 12, 0.94);
+}
+
+.timeline-scroll {
+    scrollbar-color:
+        rgba(255, 255, 255, 0.22)
+        rgba(255, 255, 255, 0.03);
+}
