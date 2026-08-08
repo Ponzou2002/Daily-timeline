@@ -123,23 +123,6 @@ body {
         inset 0 1px 0 rgba(255, 255, 255, 0.025);
 }
 
-.current-panel {
-    border-color: rgba(255, 255, 255, 0.16);
-}
-
-.current-panel::before {
-    border-color: rgba(255, 255, 255, 0.06);
-}
-
-.current-panel::after {
-    background: linear-gradient(
-        90deg,
-        transparent,
-        rgba(255, 255, 255, 0.14),
-        transparent
-    );
-}
-
 /* タイトルだけアクセント色を残す */
 .app-header h1 {
     color: var(--cyan);
@@ -156,21 +139,6 @@ th,
 .timeline-activity-time,
 .started-at {
     color: var(--muted);
-}
-
-.current-task {
-    color: var(--text);
-    text-shadow: none;
-}
-
-.digital-clock {
-    color: #ffffff;
-    text-shadow:
-        0 0 10px rgba(82, 231, 255, 0.22);
-}
-
-.started-at span {
-    color: #d8dce1;
 }
 
 /* セクション見出しは白、アクセントは必要な箇所だけ */
@@ -403,6 +371,129 @@ input[type="text"] {
 }
 
 
+/* ========================================
+   CURRENT ACTIVITY
+   このカードだけ白地 + 黒文字で強調
+======================================== */
+
+.current-column .current-panel {
+    color: #111318;
+    background: rgba(247, 247, 244, 0.96);
+    border-color: rgba(255, 255, 255, 0.92);
+
+    box-shadow:
+        0 14px 38px rgba(0, 0, 0, 0.42),
+        0 0 0 1px rgba(0, 0, 0, 0.08);
+}
+
+.current-column .current-panel::before {
+    border-color: rgba(0, 0, 0, 0.08);
+}
+
+.current-column .current-panel::after {
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(0, 0, 0, 0.18),
+        transparent
+    );
+}
+
+.current-column .current-panel .panel-label {
+    color: #686d73;
+}
+
+.current-column .current-panel .current-task {
+    color: #0d0f12;
+    text-shadow: none;
+}
+
+.current-column .current-panel .digital-clock {
+    color: #111318;
+    text-shadow: none;
+}
+
+.current-column .current-panel .started-at {
+    color: #6f747b;
+}
+
+.current-column .current-panel .started-at span {
+    color: #17191d;
+}
+
+.current-column .current-panel .inactive {
+    color: #8b9096;
+}
+
+
+/* ========================================
+   NEXT ACTION
+======================================== */
+
+.next-action-heading {
+    margin-bottom: 12px;
+}
+
+
+/* ========================================
+   CURRENT TIME WIDGET
+======================================== */
+
+.app-header {
+    position: relative;
+}
+
+.current-time-widget {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+
+    padding: 7px 10px;
+
+    color: #f2f4f6;
+    background: rgba(8, 10, 13, 0.78);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.current-time-widget span {
+    color: #8f969f;
+
+    font-family:
+        "Share Tech Mono",
+        Consolas,
+        "Courier New",
+        monospace;
+
+    font-size: 10px;
+    letter-spacing: 0.14em;
+}
+
+.current-time-widget strong {
+    color: #ffffff;
+
+    font-family:
+        "Share Tech Mono",
+        Consolas,
+        "Courier New",
+        monospace;
+
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+
+    font-variant-numeric: tabular-nums;
+}
+
+
 @media (max-width: 1000px) {
     .dashboard {
         grid-template-columns: 1fr;
@@ -410,5 +501,15 @@ input[type="text"] {
 
     .timeline-column {
         position: static;
+    }
+}
+
+@media (max-width: 700px) {
+    .current-time-widget {
+        position: static;
+        transform: none;
+
+        width: fit-content;
+        margin: 12px auto 0;
     }
 }
