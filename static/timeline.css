@@ -136,6 +136,11 @@
 
     box-shadow:
         inset 0 0 10px rgba(82, 231, 255, 0.03);
+
+    transition:
+        background 120ms ease,
+        border-color 120ms ease,
+        box-shadow 120ms ease;
 }
 
 .timeline-activity.is-current {
@@ -145,6 +150,29 @@
     box-shadow:
         inset 0 0 12px rgba(82, 231, 255, 0.08),
         0 0 10px rgba(82, 231, 255, 0.10);
+}
+
+/* Theme側の通常色より詳細度を上げて、
+   選択中のアクセントカラーでホバーを強調する。 */
+.timeline-panel .timeline-activity:hover {
+    background: var(--accent-16);
+    border-left-color: var(--accent);
+
+    box-shadow:
+        inset 0 0 0 1px var(--accent-12),
+        0 0 12px var(--accent-08);
+}
+
+.timeline-panel .timeline-activity.is-current:hover {
+    background: var(--accent-22);
+
+    box-shadow:
+        inset 0 0 0 1px var(--accent-16),
+        0 0 14px var(--accent-12);
+}
+
+.timeline-panel .timeline-activity:hover .timeline-activity-time {
+    color: var(--accent-foreground);
 }
 
 .timeline-activity-name {
@@ -172,6 +200,8 @@
 
     font-size: 10px;
     white-space: nowrap;
+
+    transition: color 120ms ease;
 }
 
 /* 文字を安全に置けないほど短いActivityは、
