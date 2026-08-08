@@ -152,6 +152,32 @@ th,
         0 0 10px rgba(82, 231, 255, 0.22);
 }
 
+/* 現在進行中であることを、軽い呼吸のような点滅で示す */
+#elapsed-time {
+    animation:
+        current-activity-pulse 2.4s ease-in-out infinite;
+    will-change: opacity, filter;
+}
+
+@keyframes current-activity-pulse {
+    0%,
+    100% {
+        opacity: 1;
+        filter: brightness(1);
+    }
+
+    50% {
+        opacity: 0.72;
+        filter: brightness(1.12);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #elapsed-time {
+        animation: none;
+    }
+}
+
 .started-at span {
     color: #d8dce1;
 }
