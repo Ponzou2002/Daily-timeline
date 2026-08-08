@@ -236,7 +236,8 @@
     margin-top: 10px;
 }
 
-.setting-field label {
+.setting-field > label,
+.setting-field > .setting-label {
     color: var(--theme-muted);
     font-size: 11px;
 }
@@ -276,6 +277,186 @@
 
 
 /* ========================================
+   ACCENT COLOR CHOICES
+======================================== */
+
+.setting-field-accent {
+    align-items: start;
+}
+
+.setting-field-accent > .setting-label {
+    padding-top: 8px;
+}
+
+.accent-choice-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 7px;
+}
+
+.accent-choice {
+    --preview-color: var(--theme-muted);
+
+    position: relative;
+
+    min-width: 0;
+    padding: 7px 8px;
+
+    display: flex;
+    align-items: center;
+    gap: 7px;
+
+    color: var(--theme-text-soft);
+    background: color-mix(
+        in srgb,
+        var(--theme-text) 3%,
+        transparent
+    );
+
+    border: 1px solid var(--theme-border);
+    border-radius: 7px;
+
+    cursor: pointer;
+
+    font-size: 11px;
+
+    transition:
+        background 120ms ease,
+        border-color 120ms ease,
+        color 120ms ease;
+}
+
+.accent-choice:hover {
+    background: color-mix(
+        in srgb,
+        var(--preview-color) 8%,
+        transparent
+    );
+    border-color: color-mix(
+        in srgb,
+        var(--preview-color) 45%,
+        var(--theme-border)
+    );
+}
+
+.accent-choice input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.accent-choice-dot {
+    width: 10px;
+    height: 10px;
+    flex: 0 0 10px;
+
+    border-radius: 50%;
+    background: var(--preview-color);
+
+    box-shadow:
+        0 0 0 1px var(--theme-border-strong),
+        0 0 7px color-mix(
+            in srgb,
+            var(--preview-color) 35%,
+            transparent
+        );
+}
+
+.accent-choice-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.accent-choice:has(input:checked) {
+    color: var(--theme-text);
+    background: color-mix(
+        in srgb,
+        var(--preview-color) 10%,
+        transparent
+    );
+    border-color: color-mix(
+        in srgb,
+        var(--preview-color) 65%,
+        var(--theme-border)
+    );
+}
+
+.accent-choice:has(input:checked) .accent-choice-dot {
+    box-shadow:
+        0 0 0 2px var(--theme-background),
+        0 0 0 3px var(--preview-color),
+        0 0 9px color-mix(
+            in srgb,
+            var(--preview-color) 45%,
+            transparent
+        );
+}
+
+.accent-choice:has(input:focus-visible) {
+    outline: 1px solid var(--preview-color);
+    outline-offset: 2px;
+}
+
+.accent-choice[data-accent-value="cyan"] {
+    --preview-color: #52e7ff;
+}
+
+.accent-choice[data-accent-value="pink"] {
+    --preview-color: #ff33aa;
+}
+
+.accent-choice[data-accent-value="purple"] {
+    --preview-color: #a78bfa;
+}
+
+.accent-choice[data-accent-value="green"] {
+    --preview-color: #6ee7b7;
+}
+
+.accent-choice[data-accent-value="orange"] {
+    --preview-color: #fb923c;
+}
+
+.accent-choice[data-accent-value="none"] {
+    --preview-color: #b8bec7;
+}
+
+html[data-theme="light"]
+.accent-choice[data-accent-value="cyan"] {
+    --preview-color: #147d8f;
+}
+
+html[data-theme="light"]
+.accent-choice[data-accent-value="pink"] {
+    --preview-color: #b81470;
+}
+
+html[data-theme="light"]
+.accent-choice[data-accent-value="purple"] {
+    --preview-color: #7050bd;
+}
+
+html[data-theme="light"]
+.accent-choice[data-accent-value="green"] {
+    --preview-color: #247a59;
+}
+
+html[data-theme="light"]
+.accent-choice[data-accent-value="orange"] {
+    --preview-color: #a94f0d;
+}
+
+html[data-theme="light"]
+.accent-choice[data-accent-value="none"] {
+    --preview-color: #34383d;
+}
+
+
+/* ========================================
    TEXTURE OVERRIDES FOR MENU
 ======================================== */
 
@@ -299,6 +480,22 @@ html[data-texture="neumorphism"] .setting-field select {
     box-shadow:
         inset 3px 3px 7px var(--neu-shadow),
         inset -3px -3px 7px var(--neu-highlight);
+}
+
+html[data-texture="neumorphism"] .accent-choice {
+    background: var(--theme-background);
+    border: none;
+
+    box-shadow:
+        -2px -2px 5px var(--neu-highlight),
+        2px 2px 5px var(--neu-shadow);
+}
+
+html[data-texture="neumorphism"]
+.accent-choice:has(input:checked) {
+    box-shadow:
+        inset 2px 2px 5px var(--neu-shadow),
+        inset -2px -2px 5px var(--neu-highlight);
 }
 
 html[data-texture="neumorphism"] .current-time-widget {
@@ -331,5 +528,9 @@ html[data-texture="neumorphism"] .current-time-widget {
     .setting-field {
         grid-template-columns: 1fr;
         gap: 5px;
+    }
+
+    .setting-field-accent > .setting-label {
+        padding-top: 0;
     }
 }
