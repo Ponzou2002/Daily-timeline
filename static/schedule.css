@@ -38,7 +38,10 @@
 
 
 /* ========================================
-   SCHEDULE BLOCKS ON TIMELINE
+   SHARED TIMELINE LANES
+   Manual schedules and actual activities are moved into the
+   same coordinate layer by timezone-window.js so overlaps can
+   be displayed side by side.
 ======================================== */
 
 .timeline-plan-layer {
@@ -48,6 +51,31 @@
 
     pointer-events: none;
 }
+
+.timeline-plan-layer .timeline-activity,
+.timeline-plan-layer .timeline-plan {
+    left: var(--schedule-left, 0%);
+    right: auto;
+
+    width: calc(var(--schedule-width, 100%) - 4px);
+    min-width: 0;
+
+    box-sizing: border-box;
+    pointer-events: auto;
+}
+
+.timeline-plan-layer .timeline-activity {
+    /* timeline.css normally positions actual activities using
+       left/right against timeline-body. Once moved into the shared
+       lane layer, percentages should use this layer instead. */
+    left: var(--schedule-left, 0%);
+    right: auto;
+}
+
+
+/* ========================================
+   SCHEDULE BLOCKS ON TIMELINE
+======================================== */
 
 .timeline-plan {
     position: absolute;
