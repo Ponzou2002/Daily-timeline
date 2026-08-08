@@ -90,6 +90,32 @@
                     </button>
                 </div>
             </form>
+                <div class="quick-start">
+                    <p class="quick-start-label">
+                        QUICK START
+                    </p>
+
+                    <form
+                        method="post"
+                        action="{{ url_for('start_activity') }}"
+                        class="quick-start-form"
+                    >
+                        {% for task in ["寝る", "仕事", "通話", "ゲーム", "開発", "外出"] %}
+                            <button
+                                type="submit"
+                                name="task_name"
+                                value="{{ task }}"
+                                class="quick-start-button"
+                                {% if current_activity
+                                    and current_activity["name"] == task %}
+                                    disabled
+                                {% endif %}
+                            >
+                                {{ task }}
+                            </button>
+                        {% endfor %}
+                    </form>
+                </div>
         </section>
 
         <section class="history-panel">
