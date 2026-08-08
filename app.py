@@ -1,12 +1,33 @@
 from datetime import datetime, timedelta
 from pathlib import Path
 import sqlite3
+from zoneinfo import ZoneInfo, available_timezones
 
 from flask import Flask, redirect, render_template, request, url_for
 
 app = Flask(__name__)
 
 DB_PATH = Path(__file__).with_name("daily_timeline.db")
+
+DEFAULT_SETTINGS = {
+    "texture": "glass",
+    "main_theme": "dark",
+    "accent_color": "cyan",
+    "timezone": "Asia/Tokyo",
+}
+
+TEXTURE_OPTIONS = {"glass", "flat", "neumorphism"}
+MAIN_THEME_OPTIONS = {"dark", "light"}
+ACCENT_COLOR_OPTIONS = {
+    "cyan",
+    "purple",
+    "green",
+    "orange",
+    "none",
+}
+
+TIMEZONE_NAMES = sorted(available_timezones())
+TIMEZONE_NAME_SET = set(TIMEZONE_NAMES)
 
 
 def get_db():
@@ -40,14 +61,76 @@ def init_db():
             """
         )
 
+        connection.execute(
+            """
+            CREATE TABLE IF NOT EXISTS app_settings (
+                key TEXT PRIMARY KEY,
+                value TEXT NOT NULL
+            )
+            """
+        )
 
-def add_display_values(activity):
+        connection.executemany(
+            """
+            INSERT OR IGNORE INTO app_settings (key, value)
+            VALUES (?, ?)
+            """,
+            DEFAULT_SETTINGS.items(),
+        )
+
+
+def load_settings(connection):
+    settings = dict(DEFAULT_SETTINGS)
+
+    rows = connection.execute(
+        """
+        SELECT key, value
+        FROM app_settings
+        """
+    ).fetchall()
+
+    for row in rows:
+        settings[row["key"]] = row["value"]
+
+    return settings
+
+
+def get_configured_timezone(settings):
+    timezone_name = settings.get(
+        "timezone",
+        DEFAULT_SETTINGS["timezone"],
+    )
+
+    try:
+        return ZoneInfo(timezone_name)
+    except Exception:
+        return ZoneInfo(DEFAULT_SETTINGS["timezone"])
+
+
+def get_current_settings():
+    with get_db() as connection:
+        return load_settings(connection)
+
+
+def convert_to_timezone(value, timezone):
+    moment = datetime.fromisoformat(value)
+
+    if moment.tzinfo is None:
+        moment = moment.replace(tzinfo=timezone)
+
+    return moment.astimezone(timezone)
+
+
+def add_display_values(activity, timezone):
     if activity is None:
         return None
 
     result = dict(activity)
 
-    started_at = datetime.fromisoformat(result["started_at"])
+    started_at = convert_to_timezone(
+        result["started_at"],
+        timezone,
+    )
 
     result["started_at_display"] = started_at.strftime(
         "%Y/%m/%d %H:%M:%S"
@@ -63,7 +146,10 @@ def add_display_values(activity):
     )
 
     if result["ended_at"]:
-        ended_at = datetime.fromisoformat(result["ended_at"])
+        ended_at = convert_to_timezone(
+            result["ended_at"],
+            timezone,
+        )
 
         result["ended_at_display"] = ended_at.strftime(
             "%Y/%m/%d %H:%M:%S"
@@ -93,17 +179,30 @@ def add_display_values(activity):
     return result
 
 
-def build_timeline_items(rows, day_start, day_end, now):
+def build_timeline_items(
+    rows,
+    day_start,
+    day_end,
+    now,
+    timezone,
+):
     items = []
 
     for row in rows:
-        started_at = datetime.fromisoformat(row["started_at"])
+        started_at = convert_to_timezone(
+            row["started_at"],
+            timezone,
+        )
+
         is_current = row["ended_at"] is None
 
         if is_current:
             ended_at = now
         else:
-            ended_at = datetime.fromisoformat(row["ended_at"])
+            ended_at = convert_to_timezone(
+                row["ended_at"],
+                timezone,
+            )
 
         visible_start = max(started_at, day_start)
         visible_end = min(ended_at, day_end)
@@ -143,18 +242,20 @@ def build_timeline_items(rows, day_start, day_end, now):
 
 @app.get("/")
 def index():
-    now = datetime.now().astimezone()
-    today = now.date().isoformat()
-
-    day_start = now.replace(
-        hour=0,
-        minute=0,
-        second=0,
-        microsecond=0,
-    )
-    day_end = day_start + timedelta(days=1)
-
     with get_db() as connection:
+        settings = load_settings(connection)
+        timezone = get_configured_timezone(settings)
+        now = datetime.now(timezone)
+        today = now.date().isoformat()
+
+        day_start = now.replace(
+            hour=0,
+            minute=0,
+            second=0,
+            microsecond=0,
+        )
+        day_end = day_start + timedelta(days=1)
+
         current_activity_row = connection.execute(
             """
             SELECT id, name, started_at, ended_at
@@ -204,10 +305,13 @@ def index():
             ),
         ).fetchall()
 
-    current_activity = add_display_values(current_activity_row)
+    current_activity = add_display_values(
+        current_activity_row,
+        timezone,
+    )
 
     recent_activities = [
-        add_display_values(activity)
+        add_display_values(activity, timezone)
         for activity in recent_activity_rows
     ]
 
@@ -238,6 +342,7 @@ def index():
         day_start,
         day_end,
         now,
+        timezone,
     )
 
     return render_template(
@@ -246,7 +351,45 @@ def index():
         activity_groups=activity_groups,
         todos=todos,
         timeline_items=timeline_items,
+        settings=settings,
+        timezone_names=TIMEZONE_NAMES,
     )
+
+
+@app.post("/settings")
+def update_settings():
+    texture = request.form.get("texture", "")
+    main_theme = request.form.get("main_theme", "")
+    accent_color = request.form.get("accent_color", "")
+    timezone_name = request.form.get("timezone", "")
+
+    updates = {}
+
+    if texture in TEXTURE_OPTIONS:
+        updates["texture"] = texture
+
+    if main_theme in MAIN_THEME_OPTIONS:
+        updates["main_theme"] = main_theme
+
+    if accent_color in ACCENT_COLOR_OPTIONS:
+        updates["accent_color"] = accent_color
+
+    if timezone_name in TIMEZONE_NAME_SET:
+        updates["timezone"] = timezone_name
+
+    with get_db() as connection:
+        for key, value in updates.items():
+            connection.execute(
+                """
+                INSERT INTO app_settings (key, value)
+                VALUES (?, ?)
+                ON CONFLICT(key)
+                DO UPDATE SET value = excluded.value
+                """,
+                (key, value),
+            )
+
+    return redirect(url_for("index"))
 
 
 @app.post("/start")
@@ -286,7 +429,9 @@ def add_todo():
     if not title:
         return redirect(url_for("index"))
 
-    now = datetime.now().astimezone()
+    settings = get_current_settings()
+    timezone = get_configured_timezone(settings)
+    now = datetime.now(timezone)
     today = now.date().isoformat()
 
     with get_db() as connection:
