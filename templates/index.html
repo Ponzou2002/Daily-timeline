@@ -20,6 +20,10 @@
         rel="stylesheet"
         href="{{ url_for('static', filename='style.css') }}"
     >
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='timeline.css') }}"
+    >
 </head>
 
 <body>
@@ -31,7 +35,7 @@
         <div class="dashboard">
 
             <!-- ========================================
-                 左側：現在の活動
+                 左側：現在の活動 + 今日のタイムライン
             ========================================= -->
             <aside class="current-column">
                 <section class="current-panel">
@@ -72,6 +76,67 @@
                             新しい活動を開始してください
                         </p>
                     {% endif %}
+                </section>
+
+                <!-- ========================================
+                     TODAY TIMELINE
+                ========================================= -->
+                <section class="timeline-panel">
+                    <div class="section-heading timeline-heading">
+                        <h2>TODAY TIMELINE</h2>
+                        <span>今日の記録</span>
+                    </div>
+
+                    <div class="timeline-body">
+                        {% for hour in range(24) %}
+                            <div
+                                class="timeline-hour"
+                                style="top: {{ hour * 100 / 24 }}%;"
+                            >
+                                <span class="timeline-hour-label">
+                                    {{ "%02d:00"|format(hour) }}
+                                </span>
+
+                                <span class="timeline-hour-line"></span>
+                            </div>
+                        {% endfor %}
+
+                        {% for activity in timeline_items %}
+                            <div
+                                class="timeline-activity{% if activity['is_current'] %} is-current{% endif %}"
+                                style="
+                                    top: {{ activity['start_percent'] }}%;
+                                    height: {{ activity['height_percent'] }}%;
+                                "
+                                {% if activity["is_current"] %}
+                                    id="timeline-current-activity"
+                                    data-start-minute="{{ activity['start_minute'] }}"
+                                {% endif %}
+                            >
+                                <div class="timeline-activity-name">
+                                    {{ activity["name"] }}
+                                </div>
+
+                                <div class="timeline-activity-time">
+                                    {{ activity["start_display"] }}
+                                    {% if activity["end_display"] %}
+                                        – {{ activity["end_display"] }}
+                                    {% else %}
+                                        – NOW
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+
+                        <div
+                            id="timeline-now"
+                            class="timeline-now"
+                        >
+                            <span id="timeline-now-label">
+                                NOW
+                            </span>
+                        </div>
+                    </div>
                 </section>
             </aside>
 
@@ -114,8 +179,6 @@
                             </div>
                         </form>
 
-
-                        <!-- QUICK START -->
                         <div class="quick-start">
                             <p class="quick-start-label">
                                 QUICK START
@@ -164,8 +227,6 @@
                             <span>今日やること</span>
                         </div>
 
-
-                        <!-- TODO追加 -->
                         <form
                             method="post"
                             action="{{ url_for('add_todo') }}"
@@ -184,21 +245,12 @@
                             </button>
                         </form>
 
-
-                        <!-- TODO一覧 -->
                         <div class="todo-list">
                             {% for todo in todos %}
 
                                 <div
-                                    class="
-                                        todo-item
-                                        {% if todo['completed_at'] %}
-                                            todo-completed
-                                        {% endif %}
-                                    "
+                                    class="todo-item{% if todo['completed_at'] %} todo-completed{% endif %}"
                                 >
-
-                                    <!-- 完了チェック -->
                                     <form
                                         method="post"
                                         action="{{ url_for(
@@ -210,25 +262,17 @@
                                         <input
                                             type="checkbox"
                                             name="completed"
-
-                                            onchange="
-                                                this.form.requestSubmit()
-                                            "
-
+                                            onchange="this.form.requestSubmit()"
                                             {% if todo["completed_at"] %}
                                                 checked
                                             {% endif %}
                                         >
                                     </form>
 
-
-                                    <!-- TODO名 -->
                                     <span class="todo-title">
                                         {{ todo["title"] }}
                                     </span>
 
-
-                                    <!-- TODOから活動開始 -->
                                     <form
                                         method="post"
                                         action="{{ url_for('start_activity') }}"
@@ -243,13 +287,11 @@
                                         <button
                                             type="submit"
                                             class="todo-start-button"
-
                                             {% if
                                                 todo["completed_at"]
                                                 or (
                                                     current_activity
-                                                    and
-                                                    current_activity["name"]
+                                                    and current_activity["name"]
                                                     == todo["title"]
                                                 )
                                             %}
@@ -259,7 +301,6 @@
                                             START
                                         </button>
                                     </form>
-
                                 </div>
 
                             {% else %}
@@ -349,22 +390,14 @@
     </main>
 
 
-    <!-- ========================================
-         JavaScript
-    ========================================= -->
-
     <script>
-        /*
-         * POSTして画面が再読込されても
-         * スクロール位置を維持する
-         */
+        /* POST後もスクロール位置を維持する */
         document.addEventListener("submit", () => {
             sessionStorage.setItem(
                 "dailyTimelineScrollY",
                 window.scrollY
             );
         });
-
 
         window.addEventListener("DOMContentLoaded", () => {
             const savedScrollY =
@@ -383,6 +416,74 @@
                 );
             }
         });
+
+
+        /* TODAY TIMELINE の現在時刻を更新する */
+        function updateTimeline() {
+            const nowLine =
+                document.getElementById(
+                    "timeline-now"
+                );
+
+            if (!nowLine) {
+                return;
+            }
+
+            const now = new Date();
+
+            const currentMinute =
+                now.getHours() * 60
+                + now.getMinutes()
+                + now.getSeconds() / 60;
+
+            const nowPercent =
+                currentMinute / 1440 * 100;
+
+            nowLine.style.top =
+                `${nowPercent}%`;
+
+            const label =
+                document.getElementById(
+                    "timeline-now-label"
+                );
+
+            const hours =
+                String(now.getHours())
+                    .padStart(2, "0");
+
+            const minutes =
+                String(now.getMinutes())
+                    .padStart(2, "0");
+
+            label.textContent =
+                `NOW ${hours}:${minutes}`;
+
+            const currentActivity =
+                document.getElementById(
+                    "timeline-current-activity"
+                );
+
+            if (currentActivity) {
+                const startMinute =
+                    Number(
+                        currentActivity
+                            .dataset
+                            .startMinute
+                    );
+
+                const duration =
+                    Math.max(
+                        0,
+                        currentMinute - startMinute
+                    );
+
+                currentActivity.style.height =
+                    `${duration / 1440 * 100}%`;
+            }
+        }
+
+        updateTimeline();
+        setInterval(updateTimeline, 30000);
     </script>
 
 
@@ -438,11 +539,7 @@
             }
 
             updateElapsedTime();
-
-            setInterval(
-                updateElapsedTime,
-                1000
-            );
+            setInterval(updateElapsedTime, 1000);
         </script>
     {% endif %}
 </body>
