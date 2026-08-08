@@ -8,32 +8,34 @@ html[data-texture] .current-time-widget {
     position: relative;
     isolation: isolate;
 
-    min-width: 190px;
-    min-height: 66px;
-    padding: 9px 13px;
+    width: 178px;
+    min-width: 178px;
+    height: 48px;
+    min-height: 48px;
+    padding: 5px 10px;
     overflow: hidden;
 
     display: flex;
     flex-direction: column;
     align-items: flex-end;
     justify-content: center;
-    gap: 1px;
+    gap: 0;
 
     color: #ffffff;
     background-color: #111820;
-    background-position: center center;
+    background-position: center 64%;
     background-size: cover;
     background-repeat: no-repeat;
 
     border: 1px solid rgba(255, 255, 255, 0.24);
-    border-radius: 9px;
+    border-radius: 8px;
 
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
 
     box-shadow:
-        inset 0 0 0 1px rgba(255, 255, 255, 0.05),
-        0 6px 18px rgba(0, 0, 0, 0.26);
+        inset 0 0 0 1px rgba(255, 255, 255, 0.04),
+        0 4px 12px rgba(0, 0, 0, 0.22);
 
     transition:
         background-image 320ms ease,
@@ -50,20 +52,20 @@ html[data-texture] .current-time-widget::before {
     background:
         linear-gradient(
             90deg,
-            rgba(3, 7, 12, 0.12) 0%,
-            rgba(3, 7, 12, 0.28) 48%,
-            rgba(3, 7, 12, 0.60) 100%
+            rgba(2, 6, 12, 0.04) 0%,
+            rgba(2, 6, 12, 0.12) 42%,
+            rgba(2, 6, 12, 0.66) 100%
         ),
         linear-gradient(
             180deg,
-            rgba(255, 255, 255, 0.04),
-            rgba(0, 0, 0, 0.18)
+            rgba(255, 255, 255, 0.025),
+            rgba(0, 0, 0, 0.16)
         );
 
     pointer-events: none;
 }
 
-/* A restrained reflection so the card reads as a window. */
+/* A restrained reflection so the card reads as a small window. */
 html[data-texture] .current-time-widget::after {
     content: "";
 
@@ -74,9 +76,9 @@ html[data-texture] .current-time-widget::after {
     background:
         linear-gradient(
             118deg,
-            transparent 0 21%,
-            rgba(255, 255, 255, 0.055) 22% 27%,
-            transparent 28% 100%
+            transparent 0 19%,
+            rgba(255, 255, 255, 0.05) 20% 25%,
+            transparent 26% 100%
         );
 
     pointer-events: none;
@@ -91,25 +93,27 @@ html[data-texture] .current-time-widget strong {
 
     text-shadow:
         0 1px 3px rgba(0, 0, 0, 0.95),
-        0 0 10px rgba(0, 0, 0, 0.44);
+        0 0 8px rgba(0, 0, 0, 0.36);
 }
 
 html[data-texture] .current-time-widget span {
-    max-width: 180px;
+    max-width: 154px;
     overflow: hidden;
 
     color: rgba(255, 255, 255, 0.80);
 
-    font-size: 9px;
-    letter-spacing: 0.12em;
+    font-size: 8px;
+    line-height: 1.05;
+    letter-spacing: 0.11em;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
 html[data-texture] .current-time-widget strong {
-    font-size: 17px;
+    font-size: 15px;
+    line-height: 1.05;
     font-weight: 500;
-    letter-spacing: 0.09em;
+    letter-spacing: 0.08em;
 }
 
 /*
@@ -127,8 +131,8 @@ html[data-texture] .current-time-widget strong {
 html[data-texture] .current-time-widget[data-time-scene="dawn"] {
     background-image:
         linear-gradient(
-            rgba(11, 18, 38, 0.12),
-            rgba(12, 16, 26, 0.22)
+            rgba(11, 18, 38, 0.08),
+            rgba(12, 16, 26, 0.16)
         ),
         url("images/timezone/dawn.jpg"),
         linear-gradient(135deg, #202d55, #bc6b67);
@@ -137,8 +141,8 @@ html[data-texture] .current-time-widget[data-time-scene="dawn"] {
 html[data-texture] .current-time-widget[data-time-scene="morning"] {
     background-image:
         linear-gradient(
-            rgba(40, 30, 16, 0.08),
-            rgba(20, 18, 18, 0.18)
+            rgba(40, 30, 16, 0.04),
+            rgba(20, 18, 18, 0.12)
         ),
         url("images/timezone/morning.jpg"),
         linear-gradient(135deg, #a8cde4, #e2ad69);
@@ -147,8 +151,8 @@ html[data-texture] .current-time-widget[data-time-scene="morning"] {
 html[data-texture] .current-time-widget[data-time-scene="day"] {
     background-image:
         linear-gradient(
-            rgba(18, 42, 60, 0.04),
-            rgba(12, 22, 30, 0.16)
+            rgba(18, 42, 60, 0.02),
+            rgba(12, 22, 30, 0.10)
         ),
         url("images/timezone/day.jpg"),
         linear-gradient(135deg, #68b1eb, #c9dbe5);
@@ -157,8 +161,8 @@ html[data-texture] .current-time-widget[data-time-scene="day"] {
 html[data-texture] .current-time-widget[data-time-scene="evening"] {
     background-image:
         linear-gradient(
-            rgba(48, 17, 25, 0.08),
-            rgba(23, 13, 22, 0.24)
+            rgba(48, 17, 25, 0.04),
+            rgba(23, 13, 22, 0.16)
         ),
         url("images/timezone/evening.jpg"),
         linear-gradient(135deg, #76405f, #ed8155);
@@ -167,8 +171,8 @@ html[data-texture] .current-time-widget[data-time-scene="evening"] {
 html[data-texture] .current-time-widget[data-time-scene="night"] {
     background-image:
         linear-gradient(
-            rgba(3, 9, 24, 0.10),
-            rgba(2, 7, 17, 0.30)
+            rgba(3, 9, 24, 0.05),
+            rgba(2, 7, 17, 0.20)
         ),
         url("images/timezone/night.jpg"),
         linear-gradient(135deg, #07152c, #17385b);
@@ -176,9 +180,11 @@ html[data-texture] .current-time-widget[data-time-scene="night"] {
 
 @media (max-width: 700px) {
     html[data-texture] .current-time-widget {
-        min-width: 112px;
-        min-height: 54px;
-        padding: 7px 9px;
+        width: 126px;
+        min-width: 126px;
+        height: 42px;
+        min-height: 42px;
+        padding: 5px 8px;
     }
 
     html[data-texture] .current-time-widget span {
@@ -186,6 +192,6 @@ html[data-texture] .current-time-widget[data-time-scene="night"] {
     }
 
     html[data-texture] .current-time-widget strong {
-        font-size: 14px;
+        font-size: 13px;
     }
 }
