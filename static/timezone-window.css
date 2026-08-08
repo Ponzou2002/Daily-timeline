@@ -120,11 +120,11 @@ html[data-texture] .current-time-widget strong {
    Image files expected under:
    static/images/timezone/
 
-   dawn.jpg
-   morning.jpg
-   day.jpg
-   evening.jpg
-   night.jpg
+   dawn.png
+   morning.png
+   day.png
+   evening.png
+   night.png
 
    The gradients remain as fallbacks until the image files exist.
 */
@@ -134,7 +134,7 @@ html[data-texture] .current-time-widget[data-time-scene="dawn"] {
             rgba(11, 18, 38, 0.08),
             rgba(12, 16, 26, 0.16)
         ),
-        url("images/timezone/dawn.jpg"),
+        url("images/timezone/dawn.png"),
         linear-gradient(135deg, #202d55, #bc6b67);
 }
 
@@ -144,7 +144,7 @@ html[data-texture] .current-time-widget[data-time-scene="morning"] {
             rgba(40, 30, 16, 0.04),
             rgba(20, 18, 18, 0.12)
         ),
-        url("images/timezone/morning.jpg"),
+        url("images/timezone/morning.png"),
         linear-gradient(135deg, #a8cde4, #e2ad69);
 }
 
@@ -154,7 +154,7 @@ html[data-texture] .current-time-widget[data-time-scene="day"] {
             rgba(18, 42, 60, 0.02),
             rgba(12, 22, 30, 0.10)
         ),
-        url("images/timezone/day.jpg"),
+        url("images/timezone/day.png"),
         linear-gradient(135deg, #68b1eb, #c9dbe5);
 }
 
@@ -164,7 +164,7 @@ html[data-texture] .current-time-widget[data-time-scene="evening"] {
             rgba(48, 17, 25, 0.04),
             rgba(23, 13, 22, 0.16)
         ),
-        url("images/timezone/evening.jpg"),
+        url("images/timezone/evening.png"),
         linear-gradient(135deg, #76405f, #ed8155);
 }
 
@@ -174,7 +174,7 @@ html[data-texture] .current-time-widget[data-time-scene="night"] {
             rgba(3, 9, 24, 0.05),
             rgba(2, 7, 17, 0.20)
         ),
-        url("images/timezone/night.jpg"),
+        url("images/timezone/night.png"),
         linear-gradient(135deg, #07152c, #17385b);
 }
 
