@@ -6,6 +6,8 @@
 :root {
     /* Accent default */
     --accent: #52e7ff;
+    --accent-foreground: var(--accent-bright);
+    --accent-contrast: #061014;
 
     --accent-bright:
         color-mix(in srgb, var(--accent) 72%, white);
@@ -75,6 +77,7 @@
 
 /* ========================================
    ACCENT COLOR
+   Darkでは明るい色、Lightでは同じ色相を濃くする。
 ======================================== */
 
 html[data-accent="cyan"] {
@@ -127,6 +130,31 @@ html[data-theme="light"] {
 
     --neu-highlight: rgba(255, 255, 255, 0.92);
     --neu-shadow: rgba(160, 168, 178, 0.52);
+
+    /* Lightではアクセント上の文字は白を基本にする */
+    --accent-foreground: var(--accent);
+    --accent-contrast: #ffffff;
+}
+
+/* Light用の高コントラスト版アクセント */
+html[data-theme="light"][data-accent="cyan"] {
+    --accent: #147d8f;
+}
+
+html[data-theme="light"][data-accent="purple"] {
+    --accent: #7050bd;
+}
+
+html[data-theme="light"][data-accent="green"] {
+    --accent: #247a59;
+}
+
+html[data-theme="light"][data-accent="orange"] {
+    --accent: #a94f0d;
+}
+
+html[data-theme="light"][data-accent="none"] {
+    --accent: #34383d;
 }
 
 
@@ -243,6 +271,10 @@ button {
     color: var(--theme-text-soft);
 }
 
+.quick-start-button:hover {
+    color: var(--accent-foreground);
+}
+
 button:disabled,
 .quick-start-button:disabled,
 .todo-start-button:disabled {
@@ -255,7 +287,7 @@ button:disabled,
 ======================================== */
 
 ::selection {
-    color: #061014;
+    color: var(--accent-contrast);
     background: var(--accent);
 }
 
@@ -324,7 +356,7 @@ button:disabled,
 }
 
 .timeline-now span {
-    color: var(--accent-bright);
+    color: var(--accent-foreground);
     background: var(--theme-panel-strong);
 }
 
@@ -355,7 +387,6 @@ html[data-texture="glass"] .timeline-panel {
         inset 0 1px 0 rgba(255, 255, 255, 0.025);
 }
 
-/* 今の物理キー表現をGlassのボタンとして残す */
 html[data-texture="glass"] button {
     position: relative;
     top: 0;
@@ -399,7 +430,7 @@ html[data-texture="glass"] button:active {
 html[data-texture="glass"] .start-form button,
 html[data-texture="glass"] .todo-add-form button,
 html[data-texture="glass"] .todo-start-button {
-    color: #061014;
+    color: var(--accent-contrast);
 
     background:
         linear-gradient(
@@ -458,7 +489,7 @@ html[data-texture="flat"] button:hover {
 html[data-texture="flat"] .start-form button,
 html[data-texture="flat"] .todo-add-form button,
 html[data-texture="flat"] .todo-start-button {
-    color: #061014;
+    color: var(--accent-contrast);
     background: var(--accent);
     border-color: var(--accent);
 }
@@ -514,7 +545,7 @@ html[data-texture="neumorphism"] button {
 }
 
 html[data-texture="neumorphism"] button:hover {
-    color: var(--accent);
+    color: var(--accent-foreground);
 }
 
 html[data-texture="neumorphism"] button:active {
@@ -526,7 +557,7 @@ html[data-texture="neumorphism"] button:active {
 html[data-texture="neumorphism"] .start-form button,
 html[data-texture="neumorphism"] .todo-add-form button,
 html[data-texture="neumorphism"] .todo-start-button {
-    color: var(--accent);
+    color: var(--accent-foreground);
     background: var(--theme-background);
     border: none;
 }
