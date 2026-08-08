@@ -68,14 +68,14 @@
         </div>
 
         <nav class="menu-nav">
-            <a
-                href="#activity-log"
-                class="menu-link"
-                data-menu-close
+            <button
+                id="activity-log-open"
+                class="menu-link menu-link-button"
+                type="button"
             >
                 <span>ACTIVITY LOG</span>
                 <span>最近の記録</span>
-            </a>
+            </button>
         </nav>
 
         <section class="settings-section">
@@ -261,7 +261,7 @@
         <div class="dashboard">
 
             <!-- ========================================
-                 左側：現在 / 開始操作 / TODO / ログ
+                 左側：現在 / 開始操作 / TODO
             ========================================= -->
             <aside class="current-column">
 
@@ -465,68 +465,6 @@
                         {% endfor %}
                     </div>
                 </section>
-
-
-                <!-- ACTIVITY LOG -->
-                <section
-                    id="activity-log"
-                    class="history-panel"
-                >
-                    <div class="section-heading">
-                        <h2>ACTIVITY LOG</h2>
-                        <span>最近の記録</span>
-                    </div>
-
-                    {% if activity_groups %}
-
-                        {% for group in activity_groups %}
-                            <section class="activity-day">
-
-                                <h3 class="activity-date">
-                                    {{ group["date_display"] }}
-                                </h3>
-
-                                <div class="table-wrapper">
-                                    <table>
-                                        <thead>
-                                            <tr>
-                                                <th>やったこと</th>
-                                                <th>開始</th>
-                                                <th>終了</th>
-                                            </tr>
-                                        </thead>
-
-                                        <tbody>
-                                            {% for activity in group["activities"] %}
-                                                <tr>
-                                                    <td class="activity-name">
-                                                        {{ activity["name"] }}
-                                                    </td>
-
-                                                    <td>
-                                                        {{ activity["started_time_display"] }}
-                                                    </td>
-
-                                                    <td>
-                                                        {{ activity["ended_time_display"] }}
-                                                    </td>
-                                                </tr>
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
-                                </div>
-
-                            </section>
-                        {% endfor %}
-
-                    {% else %}
-
-                        <p class="empty-message">
-                            終了した記録はまだありません。
-                        </p>
-
-                    {% endif %}
-                </section>
             </aside>
 
 
@@ -598,6 +536,80 @@
 
         </div>
     </main>
+
+
+    <dialog
+        id="activity-log-dialog"
+        class="activity-log-dialog"
+    >
+        <div class="activity-log-dialog-shell">
+            <header class="activity-log-dialog-header">
+                <div class="section-heading">
+                    <h2>ACTIVITY LOG</h2>
+                    <span>最近の記録</span>
+                </div>
+
+                <button
+                    id="activity-log-close"
+                    class="activity-log-dialog-close"
+                    type="button"
+                    aria-label="Activity Logを閉じる"
+                >
+                    ×
+                </button>
+            </header>
+
+            <div class="activity-log-dialog-content">
+                {% if activity_groups %}
+
+                    {% for group in activity_groups %}
+                        <section class="activity-day">
+                            <h3 class="activity-date">
+                                {{ group["date_display"] }}
+                            </h3>
+
+                            <div class="table-wrapper">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>やったこと</th>
+                                            <th>開始</th>
+                                            <th>終了</th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody>
+                                        {% for activity in group["activities"] %}
+                                            <tr>
+                                                <td class="activity-name">
+                                                    {{ activity["name"] }}
+                                                </td>
+
+                                                <td>
+                                                    {{ activity["started_time_display"] }}
+                                                </td>
+
+                                                <td>
+                                                    {{ activity["ended_time_display"] }}
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </section>
+                    {% endfor %}
+
+                {% else %}
+
+                    <p class="empty-message">
+                        終了した記録はまだありません。
+                    </p>
+
+                {% endif %}
+            </div>
+        </div>
+    </dialog>
 
 
     <script>
@@ -696,6 +708,41 @@
                     }
                 }
             );
+        }
+
+
+        function initializeActivityLogDialog() {
+            const dialog =
+                document.getElementById(
+                    "activity-log-dialog"
+                );
+            const openButton =
+                document.getElementById(
+                    "activity-log-open"
+                );
+            const closeButton =
+                document.getElementById(
+                    "activity-log-close"
+                );
+
+            if (!dialog || !openButton || !closeButton) {
+                return;
+            }
+
+            openButton.addEventListener("click", () => {
+                closeMenu();
+                dialog.showModal();
+            });
+
+            closeButton.addEventListener("click", () => {
+                dialog.close();
+            });
+
+            dialog.addEventListener("click", event => {
+                if (event.target === dialog) {
+                    dialog.close();
+                }
+            });
         }
 
 
@@ -852,6 +899,7 @@
 
         window.addEventListener("DOMContentLoaded", () => {
             initializeMenu();
+            initializeActivityLogDialog();
             initializeTimelinePositions();
             updateTimeline();
             updateCurrentClock();
