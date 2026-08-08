@@ -53,9 +53,17 @@
     position: absolute;
     z-index: 3;
 
+    top: var(--schedule-top);
+    left: var(--schedule-left);
+
+    width: calc(var(--schedule-width) - 4px);
+    height: var(--schedule-height);
+    min-width: 0;
     min-height: 2px;
     padding: 0 7px;
     overflow: hidden;
+
+    box-sizing: border-box;
 
     display: flex;
     align-items: center;
@@ -83,6 +91,14 @@
         background 120ms ease,
         border-color 120ms ease,
         box-shadow 120ms ease;
+}
+
+.timeline-plan[data-lane-count]:not([data-lane-count="1"]) {
+    background: color-mix(
+        in srgb,
+        var(--accent) 11%,
+        var(--theme-panel-solid)
+    );
 }
 
 .timeline-plan:hover {
@@ -278,16 +294,18 @@
     gap: 6px;
 }
 
-.schedule-field > span {
+.schedule-field > span:first-child,
+.schedule-clock-field legend {
     color: var(--theme-muted);
 
     font-size: 10px;
     letter-spacing: 0.10em;
 }
 
-.schedule-field input {
+.schedule-field input[type="text"] {
     width: 100%;
     min-width: 0;
+    padding: 9px 10px;
 
     color: var(--theme-text);
     background: var(--theme-input);
@@ -296,23 +314,24 @@
     border-radius: 7px;
 
     font: inherit;
+    box-sizing: border-box;
 }
 
-.schedule-field input[type="text"] {
-    padding: 9px 10px;
-}
-
-.schedule-time-input-shell {
+.schedule-date-input-shell {
     width: 100%;
     min-width: 0;
     padding: 8px 10px;
 
+    display: flex;
+
     background: var(--theme-input);
     border: 1px solid var(--theme-border-strong);
     border-radius: 7px;
+
+    box-sizing: border-box;
 }
 
-.schedule-time-input-shell input[type="time"] {
+.schedule-date-input-shell input[type="date"] {
     display: block;
 
     width: 100%;
@@ -323,9 +342,10 @@
     background: transparent;
 
     border: 0;
-    border-radius: 0;
-
     outline: none;
+
+    font: inherit;
+    font-size: 12px;
 }
 
 .schedule-time-grid {
@@ -334,8 +354,62 @@
     gap: 12px;
 }
 
+.schedule-clock-field {
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+
+    border: 0;
+}
+
+.schedule-clock-field legend {
+    margin-bottom: 6px;
+}
+
+.schedule-clock-selects {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+    gap: 6px;
+}
+
+.schedule-clock-selects select {
+    width: 100%;
+    min-width: 0;
+    padding: 8px 7px;
+
+    color: var(--theme-text);
+    background: var(--theme-input);
+
+    border: 1px solid var(--theme-border-strong);
+    border-radius: 7px;
+
+    font: inherit;
+    font-family:
+        "Share Tech Mono",
+        Consolas,
+        "Courier New",
+        monospace;
+    font-size: 12px;
+
+    cursor: pointer;
+}
+
+.schedule-clock-separator {
+    color: var(--theme-muted);
+
+    font-family:
+        "Share Tech Mono",
+        Consolas,
+        "Courier New",
+        monospace;
+
+    font-size: 14px;
+}
+
 .schedule-field input:focus,
-.schedule-time-input-shell:focus-within {
+.schedule-date-input-shell:focus-within,
+.schedule-clock-selects select:focus {
     outline: 1px solid var(--accent);
     outline-offset: 1px;
 }
@@ -385,7 +459,8 @@ html[data-texture="neumorphism"] .schedule-dialog-shell {
 }
 
 html[data-texture="neumorphism"] .schedule-field input[type="text"],
-html[data-texture="neumorphism"] .schedule-time-input-shell {
+html[data-texture="neumorphism"] .schedule-date-input-shell,
+html[data-texture="neumorphism"] .schedule-clock-selects select {
     background: var(--theme-background);
     border: none;
 
