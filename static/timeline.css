@@ -211,6 +211,65 @@
     .timeline-activity-time {
         display: none;
     }
+
+    /* hover中だけタイトル＋時刻の小さなテーマ連動カードを出す。 */
+    .timeline-activity:hover {
+        z-index: 20;
+        overflow: visible;
+    }
+
+    .timeline-activity:hover .timeline-activity-name,
+    .timeline-activity:hover .timeline-activity-time {
+        position: absolute;
+        left: 0;
+
+        width: 220px;
+        max-width: min(260px, calc(100vw - 110px));
+
+        display: block;
+        overflow: hidden;
+
+        color: var(--theme-text);
+        background: var(--theme-panel-solid);
+
+        border-left: 1px solid var(--accent-40);
+        border-right: 1px solid var(--theme-border-strong);
+
+        text-overflow: ellipsis;
+        white-space: nowrap;
+
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+
+        box-shadow:
+            0 12px 28px var(--theme-shadow);
+    }
+
+    .timeline-activity:hover .timeline-activity-name {
+        top: calc(100% + 6px);
+
+        padding: 8px 10px 3px;
+
+        border-top: 1px solid var(--theme-border-strong);
+        border-radius: 7px 7px 0 0;
+
+        font-size: 12px;
+        line-height: 16px;
+    }
+
+    .timeline-activity:hover .timeline-activity-time {
+        top: calc(100% + 33px);
+
+        padding: 2px 10px 8px;
+
+        color: var(--accent-foreground);
+
+        border-bottom: 1px solid var(--theme-border-strong);
+        border-radius: 0 0 7px 7px;
+
+        font-size: 10px;
+        line-height: 14px;
+    }
 }
 
 /* ========================================
