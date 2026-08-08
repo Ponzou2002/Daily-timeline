@@ -44,6 +44,10 @@
         rel="stylesheet"
         href="{{ url_for('static', filename='timezone-window.css') }}"
     >
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='schedule.css') }}"
+    >
 
     <script
         defer
@@ -327,7 +331,6 @@
                                 autocomplete="off"
                                 required
                             >
-
                             <button type="submit">
                                 START
                             </button>
@@ -462,8 +465,18 @@
             <section class="timeline-column">
                 <section class="timeline-panel">
                     <div class="section-heading timeline-heading">
-                        <h2>TODAY TIMELINE</h2>
-                        <span>今日の記録</span>
+                        <div class="timeline-heading-copy">
+                            <h2>TODAY TIMELINE</h2>
+                            <span>今日の記録</span>
+                        </div>
+
+                        <button
+                            id="add-schedule-open"
+                            class="timeline-add-schedule"
+                            type="button"
+                        >
+                            + ADD SCHEDULE
+                        </button>
                     </div>
 
                     <div
@@ -508,6 +521,29 @@
                                 </div>
                             {% endfor %}
 
+                            <div class="timeline-plan-layer">
+                                {% for schedule in schedule_items %}
+                                    <div
+                                        class="timeline-plan"
+                                        style="
+                                            top: {{ schedule['start_percent'] }}%;
+                                            height: {{ schedule['height_percent'] }}%;
+                                            left: {{ schedule['lane_left_percent'] }}%;
+                                            width: calc({{ schedule['lane_width_percent'] }}% - 3px);
+                                        "
+                                    >
+                                        <div class="timeline-plan-name">
+                                            {{ schedule["name"] }}
+                                        </div>
+
+                                        <div class="timeline-plan-time">
+                                            {{ schedule["start_display"] }}
+                                            – {{ schedule["end_display"] }}
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+
                             <div
                                 id="timeline-now"
                                 class="timeline-now"
@@ -522,6 +558,91 @@
             </section>
         </div>
     </main>
+
+
+    <dialog
+        id="schedule-dialog"
+        class="schedule-dialog"
+    >
+        <div class="schedule-dialog-shell">
+            <header class="schedule-dialog-header">
+                <div class="schedule-dialog-title">
+                    <h2>ADD SCHEDULE</h2>
+                    <span>今日の予定を手動で追加</span>
+                </div>
+
+                <button
+                    id="schedule-dialog-close"
+                    class="schedule-dialog-close"
+                    type="button"
+                    aria-label="予定追加を閉じる"
+                >
+                    ×
+                </button>
+            </header>
+
+            <form
+                id="schedule-form"
+                method="post"
+                action="{{ url_for('add_schedule') }}"
+                class="schedule-form"
+            >
+                <label class="schedule-field">
+                    <span>NAME</span>
+                    <input
+                        id="schedule-name"
+                        type="text"
+                        name="name"
+                        autocomplete="off"
+                        required
+                    >
+                </label>
+
+                <div class="schedule-time-grid">
+                    <label class="schedule-field">
+                        <span>START</span>
+                        <span class="schedule-time-input-shell">
+                            <input
+                                id="schedule-start-time"
+                                type="time"
+                                name="start_time"
+                                required
+                            >
+                        </span>
+                    </label>
+
+                    <label class="schedule-field">
+                        <span>END</span>
+                        <span class="schedule-time-input-shell">
+                            <input
+                                id="schedule-end-time"
+                                type="time"
+                                name="end_time"
+                                required
+                            >
+                        </span>
+                    </label>
+                </div>
+
+                <div class="schedule-dialog-actions">
+                    <button
+                        id="schedule-dialog-cancel"
+                        class="schedule-dialog-cancel"
+                        type="button"
+                    >
+                        CANCEL
+                    </button>
+
+                    <button
+                        class="schedule-dialog-submit"
+                        type="submit"
+                    >
+                        ADD
+                    </button>
+                </div>
+            </form>
+        </div>
+    </dialog>
 
 
     <dialog
@@ -695,6 +816,81 @@
             });
         }
 
+        function initializeScheduleDialog() {
+            const dialog = document.getElementById("schedule-dialog");
+            const openButton = document.getElementById("add-schedule-open");
+            const closeButton = document.getElementById("schedule-dialog-close");
+            const cancelButton = document.getElementById("schedule-dialog-cancel");
+            const form = document.getElementById("schedule-form");
+            const nameInput = document.getElementById("schedule-name");
+            const startInput = document.getElementById("schedule-start-time");
+            const endInput = document.getElementById("schedule-end-time");
+
+            if (
+                !dialog
+                || !openButton
+                || !closeButton
+                || !cancelButton
+                || !form
+                || !startInput
+                || !endInput
+            ) {
+                return;
+            }
+
+            openButton.addEventListener("click", () => {
+                dialog.showModal();
+                window.setTimeout(() => {
+                    nameInput?.focus();
+                }, 0);
+            });
+
+            closeButton.addEventListener("click", () => {
+                dialog.close();
+            });
+
+            cancelButton.addEventListener("click", () => {
+                dialog.close();
+            });
+
+            dialog.addEventListener("click", event => {
+                if (event.target === dialog) {
+                    dialog.close();
+                }
+            });
+
+            function validateScheduleTimes() {
+                endInput.setCustomValidity("");
+
+                if (
+                    startInput.value
+                    && endInput.value
+                    && endInput.value <= startInput.value
+                ) {
+                    endInput.setCustomValidity(
+                        "終了時刻は開始時刻より後にしてください。"
+                    );
+                }
+            }
+
+            startInput.addEventListener(
+                "input",
+                validateScheduleTimes
+            );
+            endInput.addEventListener(
+                "input",
+                validateScheduleTimes
+            );
+
+            form.addEventListener("submit", event => {
+                validateScheduleTimes();
+
+                if (!form.reportValidity()) {
+                    event.preventDefault();
+                }
+            });
+        }
+
         function initializeTimelinePositions() {
             document
                 .querySelectorAll(".timeline-hour")
@@ -812,6 +1008,7 @@
         window.addEventListener("DOMContentLoaded", () => {
             initializeMenu();
             initializeActivityLogDialog();
+            initializeScheduleDialog();
             initializeTimelinePositions();
             updateTimeline();
             updateCurrentClock();
