@@ -3,7 +3,7 @@ from pathlib import Path
 import sqlite3
 from zoneinfo import ZoneInfo, available_timezones
 
-from flask import Flask, redirect, render_template, request, url_for
+from flask import Flask, jsonify, redirect, render_template, request, url_for
 
 app = Flask(__name__)
 
@@ -363,6 +363,41 @@ def build_schedule_items(
     return items
 
 
+def get_today_schedule_items():
+    settings = get_current_settings()
+    timezone = get_configured_timezone(settings)
+    now = datetime.now(timezone)
+    day_start = now.replace(
+        hour=0,
+        minute=0,
+        second=0,
+        microsecond=0,
+    )
+    day_end = day_start + timedelta(days=1)
+
+    with get_db() as connection:
+        rows = connection.execute(
+            """
+            SELECT id, name, planned_start, planned_end, created_at
+            FROM plans
+            WHERE datetime(planned_start) < datetime(?)
+              AND datetime(planned_end) > datetime(?)
+            ORDER BY datetime(planned_start) ASC
+            """,
+            (
+                day_end.isoformat(timespec="seconds"),
+                day_start.isoformat(timespec="seconds"),
+            ),
+        ).fetchall()
+
+    return build_schedule_items(
+        rows,
+        day_start,
+        day_end,
+        timezone,
+    )
+
+
 @app.get("/")
 def index():
     with get_db() as connection:
@@ -656,6 +691,27 @@ def add_schedule():
     return redirect(url_for("index"))
 
 
+@app.get("/schedule/today.json")
+def get_today_schedules():
+    return jsonify(
+        [
+            {"id": item["id"]}
+            for item in get_today_schedule_items()
+        ]
+    )
+
+
+@app.post("/schedule/<int:schedule_id>/delete")
+def delete_schedule(schedule_id):
+    with get_db() as connection:
+        connection.execute(
+            "DELETE FROM plans WHERE id = ?",
+            (schedule_id,),
+        )
+
+    return redirect(url_for("index"))
+
+
 @app.post("/todo/add")
 def add_todo():
     title = request.form.get("title", "").strip()
@@ -709,6 +765,17 @@ def complete_todo(todo_id):
             WHERE id = ?
             """,
             (completed_at, todo_id),
+        )
+
+    return redirect(url_for("index"))
+
+
+@app.post("/todo/<int:todo_id>/delete")
+def delete_todo(todo_id):
+    with get_db() as connection:
+        connection.execute(
+            "DELETE FROM todos WHERE id = ?",
+            (todo_id,),
         )
 
     return redirect(url_for("index"))
