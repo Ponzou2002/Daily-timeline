@@ -1,0 +1,191 @@
+/* ========================================
+   TIME ZONE WINDOW
+   Theme settings are intentionally ignored here.
+   The scene follows the configured time zone instead.
+======================================== */
+
+html[data-texture] .current-time-widget {
+    position: relative;
+    isolation: isolate;
+
+    min-width: 190px;
+    min-height: 66px;
+    padding: 9px 13px;
+    overflow: hidden;
+
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 1px;
+
+    color: #ffffff;
+    background-color: #111820;
+    background-position: center center;
+    background-size: cover;
+    background-repeat: no-repeat;
+
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    border-radius: 9px;
+
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+
+    box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.05),
+        0 6px 18px rgba(0, 0, 0, 0.26);
+
+    transition:
+        background-image 320ms ease,
+        box-shadow 160ms ease;
+}
+
+html[data-texture] .current-time-widget::before {
+    content: "";
+
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+
+    background:
+        linear-gradient(
+            90deg,
+            rgba(3, 7, 12, 0.12) 0%,
+            rgba(3, 7, 12, 0.28) 48%,
+            rgba(3, 7, 12, 0.60) 100%
+        ),
+        linear-gradient(
+            180deg,
+            rgba(255, 255, 255, 0.04),
+            rgba(0, 0, 0, 0.18)
+        );
+
+    pointer-events: none;
+}
+
+/* A restrained reflection so the card reads as a window. */
+html[data-texture] .current-time-widget::after {
+    content: "";
+
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+
+    background:
+        linear-gradient(
+            118deg,
+            transparent 0 21%,
+            rgba(255, 255, 255, 0.055) 22% 27%,
+            transparent 28% 100%
+        );
+
+    pointer-events: none;
+}
+
+html[data-texture] .current-time-widget span,
+html[data-texture] .current-time-widget strong {
+    position: relative;
+    z-index: 2;
+
+    color: #ffffff;
+
+    text-shadow:
+        0 1px 3px rgba(0, 0, 0, 0.95),
+        0 0 10px rgba(0, 0, 0, 0.44);
+}
+
+html[data-texture] .current-time-widget span {
+    max-width: 180px;
+    overflow: hidden;
+
+    color: rgba(255, 255, 255, 0.80);
+
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+html[data-texture] .current-time-widget strong {
+    font-size: 17px;
+    font-weight: 500;
+    letter-spacing: 0.09em;
+}
+
+/*
+   Image files expected under:
+   static/images/timezone/
+
+   dawn.jpg
+   morning.jpg
+   day.jpg
+   evening.jpg
+   night.jpg
+
+   The gradients remain as fallbacks until the image files exist.
+*/
+html[data-texture] .current-time-widget[data-time-scene="dawn"] {
+    background-image:
+        linear-gradient(
+            rgba(11, 18, 38, 0.12),
+            rgba(12, 16, 26, 0.22)
+        ),
+        url("images/timezone/dawn.jpg"),
+        linear-gradient(135deg, #202d55, #bc6b67);
+}
+
+html[data-texture] .current-time-widget[data-time-scene="morning"] {
+    background-image:
+        linear-gradient(
+            rgba(40, 30, 16, 0.08),
+            rgba(20, 18, 18, 0.18)
+        ),
+        url("images/timezone/morning.jpg"),
+        linear-gradient(135deg, #a8cde4, #e2ad69);
+}
+
+html[data-texture] .current-time-widget[data-time-scene="day"] {
+    background-image:
+        linear-gradient(
+            rgba(18, 42, 60, 0.04),
+            rgba(12, 22, 30, 0.16)
+        ),
+        url("images/timezone/day.jpg"),
+        linear-gradient(135deg, #68b1eb, #c9dbe5);
+}
+
+html[data-texture] .current-time-widget[data-time-scene="evening"] {
+    background-image:
+        linear-gradient(
+            rgba(48, 17, 25, 0.08),
+            rgba(23, 13, 22, 0.24)
+        ),
+        url("images/timezone/evening.jpg"),
+        linear-gradient(135deg, #76405f, #ed8155);
+}
+
+html[data-texture] .current-time-widget[data-time-scene="night"] {
+    background-image:
+        linear-gradient(
+            rgba(3, 9, 24, 0.10),
+            rgba(2, 7, 17, 0.30)
+        ),
+        url("images/timezone/night.jpg"),
+        linear-gradient(135deg, #07152c, #17385b);
+}
+
+@media (max-width: 700px) {
+    html[data-texture] .current-time-widget {
+        min-width: 112px;
+        min-height: 54px;
+        padding: 7px 9px;
+    }
+
+    html[data-texture] .current-time-widget span {
+        display: none;
+    }
+
+    html[data-texture] .current-time-widget strong {
+        font-size: 14px;
+    }
+}
