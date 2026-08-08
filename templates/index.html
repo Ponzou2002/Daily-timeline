@@ -15,7 +15,6 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
     <link
         href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap"
         rel="stylesheet"
@@ -41,6 +40,15 @@
         rel="stylesheet"
         href="{{ url_for('static', filename='navigation.css') }}"
     >
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='timezone-window.css') }}"
+    >
+
+    <script
+        defer
+        src="{{ url_for('static', filename='timezone-window.js') }}"
+    ></script>
 </head>
 
 <body>
@@ -259,13 +267,7 @@
         </header>
 
         <div class="dashboard">
-
-            <!-- ========================================
-                 左側：現在 / 開始操作 / TODO
-            ========================================= -->
             <aside class="current-column">
-
-                <!-- CURRENT ACTIVITY -->
                 <section class="current-panel">
                     <p class="panel-label">
                         CURRENT ACTIVITY
@@ -290,7 +292,6 @@
                                 {{ current_activity["started_at_display"] }}
                             </span>
                         </p>
-
                     {% else %}
                         <h2 class="current-task inactive">
                             NO ACTIVITY
@@ -306,8 +307,6 @@
                     {% endif %}
                 </section>
 
-
-                <!-- NEXT ACTION / QUICK START -->
                 <section class="control-panel">
                     <div class="section-heading next-action-heading">
                         <h2>NEXT ACTION</h2>
@@ -357,7 +356,6 @@
                                     name="task_name"
                                     value="{{ task }}"
                                     class="quick-start-button"
-
                                     {% if
                                         current_activity
                                         and current_activity["name"] == task
@@ -372,8 +370,6 @@
                     </div>
                 </section>
 
-
-                <!-- TODAY'S TODO -->
                 <section class="todo-panel">
                     <div class="section-heading">
                         <h2>TODAY'S TODO</h2>
@@ -400,7 +396,6 @@
 
                     <div class="todo-list">
                         {% for todo in todos %}
-
                             <div
                                 class="todo-item{% if todo['completed_at'] %} todo-completed{% endif %}"
                             >
@@ -455,22 +450,15 @@
                                     </button>
                                 </form>
                             </div>
-
                         {% else %}
-
                             <p class="empty-message">
                                 今日のTODOはありません。
                             </p>
-
                         {% endfor %}
                     </div>
                 </section>
             </aside>
 
-
-            <!-- ========================================
-                 右側：TODAY TIMELINE専用
-            ========================================= -->
             <section class="timeline-column">
                 <section class="timeline-panel">
                     <div class="section-heading timeline-heading">
@@ -491,7 +479,6 @@
                                     <span class="timeline-hour-label">
                                         {{ "%02d:00"|format(hour) }}
                                     </span>
-
                                     <span class="timeline-hour-line"></span>
                                 </div>
                             {% endfor %}
@@ -533,7 +520,6 @@
                     </div>
                 </section>
             </section>
-
         </div>
     </main>
 
@@ -561,7 +547,6 @@
 
             <div class="activity-log-dialog-content">
                 {% if activity_groups %}
-
                     {% for group in activity_groups %}
                         <section class="activity-day">
                             <h3 class="activity-date">
@@ -584,11 +569,9 @@
                                                 <td class="activity-name">
                                                     {{ activity["name"] }}
                                                 </td>
-
                                                 <td>
                                                     {{ activity["started_time_display"] }}
                                                 </td>
-
                                                 <td>
                                                     {{ activity["ended_time_display"] }}
                                                 </td>
@@ -599,13 +582,10 @@
                             </div>
                         </section>
                     {% endfor %}
-
                 {% else %}
-
                     <p class="empty-message">
                         終了した記録はまだありません。
                     </p>
-
                 {% endif %}
             </div>
         </div>
@@ -628,11 +608,9 @@
                 }
             );
 
-
         function getConfiguredTimeParts() {
             const parts = appTimeFormatter
                 .formatToParts(new Date());
-
             const values = {};
 
             parts.forEach(part => {
@@ -648,14 +626,10 @@
             return values;
         }
 
-
         function openMenu() {
-            const menu =
-                document.getElementById("app-menu");
-            const backdrop =
-                document.getElementById("menu-backdrop");
-            const toggle =
-                document.getElementById("menu-toggle");
+            const menu = document.getElementById("app-menu");
+            const backdrop = document.getElementById("menu-backdrop");
+            const toggle = document.getElementById("menu-toggle");
 
             menu.classList.add("is-open");
             backdrop.classList.add("is-open");
@@ -663,14 +637,10 @@
             toggle.setAttribute("aria-expanded", "true");
         }
 
-
         function closeMenu() {
-            const menu =
-                document.getElementById("app-menu");
-            const backdrop =
-                document.getElementById("menu-backdrop");
-            const toggle =
-                document.getElementById("menu-toggle");
+            const menu = document.getElementById("app-menu");
+            const backdrop = document.getElementById("menu-backdrop");
+            const toggle = document.getElementById("menu-toggle");
 
             menu.classList.remove("is-open");
             backdrop.classList.remove("is-open");
@@ -678,14 +648,10 @@
             toggle.setAttribute("aria-expanded", "false");
         }
 
-
         function initializeMenu() {
-            const toggle =
-                document.getElementById("menu-toggle");
-            const closeButton =
-                document.getElementById("menu-close");
-            const backdrop =
-                document.getElementById("menu-backdrop");
+            const toggle = document.getElementById("menu-toggle");
+            const closeButton = document.getElementById("menu-close");
+            const backdrop = document.getElementById("menu-backdrop");
 
             toggle.addEventListener("click", openMenu);
             closeButton.addEventListener("click", closeMenu);
@@ -694,36 +660,20 @@
             document
                 .querySelectorAll("[data-menu-close]")
                 .forEach(element => {
-                    element.addEventListener(
-                        "click",
-                        closeMenu
-                    );
+                    element.addEventListener("click", closeMenu);
                 });
 
-            document.addEventListener(
-                "keydown",
-                event => {
-                    if (event.key === "Escape") {
-                        closeMenu();
-                    }
+            document.addEventListener("keydown", event => {
+                if (event.key === "Escape") {
+                    closeMenu();
                 }
-            );
+            });
         }
 
-
         function initializeActivityLogDialog() {
-            const dialog =
-                document.getElementById(
-                    "activity-log-dialog"
-                );
-            const openButton =
-                document.getElementById(
-                    "activity-log-open"
-                );
-            const closeButton =
-                document.getElementById(
-                    "activity-log-close"
-                );
+            const dialog = document.getElementById("activity-log-dialog");
+            const openButton = document.getElementById("activity-log-open");
+            const closeButton = document.getElementById("activity-log-close");
 
             if (!dialog || !openButton || !closeButton) {
                 return;
@@ -745,15 +695,11 @@
             });
         }
 
-
         function initializeTimelinePositions() {
             document
                 .querySelectorAll(".timeline-hour")
                 .forEach(hourElement => {
-                    const hour = Number(
-                        hourElement.dataset.hour
-                    );
-
+                    const hour = Number(hourElement.dataset.hour);
                     hourElement.style.top =
                         `${hour / 24 * 100}%`;
                 });
@@ -763,25 +709,19 @@
                 .forEach(activityElement => {
                     activityElement.style.top =
                         `${activityElement.dataset.startPercent}%`;
-
                     activityElement.style.height =
                         `${activityElement.dataset.heightPercent}%`;
                 });
         }
 
-
         function updateTimeline() {
-            const nowLine =
-                document.getElementById(
-                    "timeline-now"
-                );
+            const nowLine = document.getElementById("timeline-now");
 
             if (!nowLine) {
                 return;
             }
 
             const time = getConfiguredTimeParts();
-
             const currentMinute =
                 time.hour * 60
                 + time.minute
@@ -791,49 +731,31 @@
                 `${currentMinute / 1440 * 100}%`;
 
             const label =
-                document.getElementById(
-                    "timeline-now-label"
-                );
-
+                document.getElementById("timeline-now-label");
             const hours =
-                String(time.hour)
-                    .padStart(2, "0");
-
+                String(time.hour).padStart(2, "0");
             const minutes =
-                String(time.minute)
-                    .padStart(2, "0");
+                String(time.minute).padStart(2, "0");
 
-            label.textContent =
-                `NOW ${hours}:${minutes}`;
+            label.textContent = `NOW ${hours}:${minutes}`;
 
             const currentActivity =
-                document.getElementById(
-                    "timeline-current-activity"
-                );
+                document.getElementById("timeline-current-activity");
 
             if (currentActivity) {
                 const startMinute =
-                    Number(
-                        currentActivity.dataset.startMinute
-                    );
-
+                    Number(currentActivity.dataset.startMinute);
                 const duration =
-                    Math.max(
-                        0,
-                        currentMinute - startMinute
-                    );
+                    Math.max(0, currentMinute - startMinute);
 
                 currentActivity.style.height =
                     `${duration / 1440 * 100}%`;
             }
         }
 
-
         function updateCurrentClock() {
             const clock =
-                document.getElementById(
-                    "current-time-clock"
-                );
+                document.getElementById("current-time-clock");
 
             if (!clock) {
                 return;
@@ -852,17 +774,11 @@
                 .join(":");
         }
 
-
         function scrollTimelineToNow() {
             const timelineScroll =
-                document.getElementById(
-                    "timeline-scroll"
-                );
-
+                document.getElementById("timeline-scroll");
             const nowLine =
-                document.getElementById(
-                    "timeline-now"
-                );
+                document.getElementById("timeline-now");
 
             if (!timelineScroll || !nowLine) {
                 return;
@@ -876,7 +792,6 @@
                 );
         }
 
-
         document.addEventListener("submit", () => {
             sessionStorage.setItem(
                 "dailyTimelineScrollY",
@@ -884,9 +799,7 @@
             );
 
             const timelineScroll =
-                document.getElementById(
-                    "timeline-scroll"
-                );
+                document.getElementById("timeline-scroll");
 
             if (timelineScroll) {
                 sessionStorage.setItem(
@@ -896,7 +809,6 @@
             }
         });
 
-
         window.addEventListener("DOMContentLoaded", () => {
             initializeMenu();
             initializeActivityLogDialog();
@@ -905,30 +817,17 @@
             updateCurrentClock();
 
             const savedScrollY =
-                sessionStorage.getItem(
-                    "dailyTimelineScrollY"
-                );
+                sessionStorage.getItem("dailyTimelineScrollY");
 
             if (savedScrollY !== null) {
-                window.scrollTo(
-                    0,
-                    Number(savedScrollY)
-                );
-
-                sessionStorage.removeItem(
-                    "dailyTimelineScrollY"
-                );
+                window.scrollTo(0, Number(savedScrollY));
+                sessionStorage.removeItem("dailyTimelineScrollY");
             }
 
             const timelineScroll =
-                document.getElementById(
-                    "timeline-scroll"
-                );
-
+                document.getElementById("timeline-scroll");
             const savedTimelineScrollY =
-                sessionStorage.getItem(
-                    "dailyTimelineInnerScrollY"
-                );
+                sessionStorage.getItem("dailyTimelineInnerScrollY");
 
             if (
                 timelineScroll
@@ -936,7 +835,6 @@
             ) {
                 timelineScroll.scrollTop =
                     Number(savedTimelineScrollY);
-
                 sessionStorage.removeItem(
                     "dailyTimelineInnerScrollY"
                 );
@@ -945,66 +843,38 @@
             }
         });
 
-
-        setInterval(
-            updateTimeline,
-            30000
-        );
-
-        setInterval(
-            updateCurrentClock,
-            1000
-        );
+        setInterval(updateTimeline, 30000);
+        setInterval(updateCurrentClock, 1000);
     </script>
-
 
     {% if current_activity %}
         <script>
             const elapsedElement =
-                document.getElementById(
-                    "elapsed-time"
-                );
-
+                document.getElementById("elapsed-time");
             const startedAt =
-                new Date(
-                    elapsedElement.dataset.startedAt
-                );
+                new Date(elapsedElement.dataset.startedAt);
 
             function updateElapsedTime() {
                 const elapsedMilliseconds =
                     Math.max(
                         0,
-                        Date.now()
-                        - startedAt.getTime()
+                        Date.now() - startedAt.getTime()
                     );
-
                 const totalSeconds =
-                    Math.floor(
-                        elapsedMilliseconds / 1000
-                    );
-
+                    Math.floor(elapsedMilliseconds / 1000);
                 const hours =
-                    Math.floor(
-                        totalSeconds / 3600
-                    );
-
+                    Math.floor(totalSeconds / 3600);
                 const minutes =
-                    Math.floor(
-                        (totalSeconds % 3600) / 60
-                    );
-
-                const seconds =
-                    totalSeconds % 60;
+                    Math.floor((totalSeconds % 3600) / 60);
+                const seconds = totalSeconds % 60;
 
                 elapsedElement.textContent = [
                     hours,
                     minutes,
                     seconds
                 ]
-                    .map(
-                        value =>
-                            String(value)
-                                .padStart(2, "0")
+                    .map(value =>
+                        String(value).padStart(2, "0")
                     )
                     .join(":");
             }
