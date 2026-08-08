@@ -64,6 +64,18 @@ def init_db():
 
         connection.execute(
             """
+            CREATE TABLE IF NOT EXISTS plans (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                planned_start TEXT NOT NULL,
+                planned_end TEXT NOT NULL,
+                created_at TEXT NOT NULL
+            )
+            """
+        )
+
+        connection.execute(
+            """
             CREATE TABLE IF NOT EXISTS app_settings (
                 key TEXT PRIMARY KEY,
                 value TEXT NOT NULL
@@ -241,6 +253,114 @@ def build_timeline_items(
     return items
 
 
+def layout_schedule_group(group):
+    lane_ends = []
+
+    for item in group:
+        lane_index = None
+
+        for index, lane_end in enumerate(lane_ends):
+            if item["start_minute"] >= lane_end:
+                lane_index = index
+                lane_ends[index] = item["end_minute"]
+                break
+
+        if lane_index is None:
+            lane_index = len(lane_ends)
+            lane_ends.append(item["end_minute"])
+
+        item["lane_index"] = lane_index
+
+    lane_count = max(1, len(lane_ends))
+
+    for item in group:
+        item["lane_count"] = lane_count
+        item["lane_left_percent"] = (
+            item["lane_index"] / lane_count * 100
+        )
+        item["lane_width_percent"] = 100 / lane_count
+
+
+def build_schedule_items(
+    rows,
+    day_start,
+    day_end,
+    timezone,
+):
+    items = []
+
+    for row in rows:
+        planned_start = convert_to_timezone(
+            row["planned_start"],
+            timezone,
+        )
+        planned_end = convert_to_timezone(
+            row["planned_end"],
+            timezone,
+        )
+
+        visible_start = max(planned_start, day_start)
+        visible_end = min(planned_end, day_end)
+
+        if visible_end <= visible_start:
+            continue
+
+        start_minutes = (
+            visible_start - day_start
+        ).total_seconds() / 60
+        end_minutes = (
+            visible_end - day_start
+        ).total_seconds() / 60
+        duration_minutes = end_minutes - start_minutes
+
+        items.append(
+            {
+                "id": row["id"],
+                "name": row["name"],
+                "start_percent": start_minutes / 1440 * 100,
+                "height_percent": duration_minutes / 1440 * 100,
+                "start_minute": start_minutes,
+                "end_minute": end_minutes,
+                "start_display": visible_start.strftime("%H:%M"),
+                "end_display": visible_end.strftime("%H:%M"),
+            }
+        )
+
+    items.sort(
+        key=lambda item: (
+            item["start_minute"],
+            item["end_minute"],
+        )
+    )
+
+    current_group = []
+    current_group_end = None
+
+    for item in items:
+        if (
+            current_group
+            and item["start_minute"] >= current_group_end
+        ):
+            layout_schedule_group(current_group)
+            current_group = []
+            current_group_end = None
+
+        current_group.append(item)
+
+        if current_group_end is None:
+            current_group_end = item["end_minute"]
+        else:
+            current_group_end = max(
+                current_group_end,
+                item["end_minute"],
+            )
+
+    if current_group:
+        layout_schedule_group(current_group)
+
+    return items
+
+
 @app.get("/")
 def index():
     with get_db() as connection:
@@ -306,6 +426,20 @@ def index():
             ),
         ).fetchall()
 
+        schedule_rows = connection.execute(
+            """
+            SELECT id, name, planned_start, planned_end, created_at
+            FROM plans
+            WHERE datetime(planned_start) < datetime(?)
+              AND datetime(planned_end) > datetime(?)
+            ORDER BY datetime(planned_start) ASC
+            """,
+            (
+                day_end.isoformat(timespec="seconds"),
+                day_start.isoformat(timespec="seconds"),
+            ),
+        ).fetchall()
+
     current_activity = add_display_values(
         current_activity_row,
         timezone,
@@ -346,12 +480,20 @@ def index():
         timezone,
     )
 
+    schedule_items = build_schedule_items(
+        schedule_rows,
+        day_start,
+        day_end,
+        timezone,
+    )
+
     return render_template(
         "index.html",
         current_activity=current_activity,
         activity_groups=activity_groups,
         todos=todos,
         timeline_items=timeline_items,
+        schedule_items=schedule_items,
         settings=settings,
         timezone_names=TIMEZONE_NAMES,
     )
@@ -418,6 +560,67 @@ def start_activity():
             VALUES (?, ?)
             """,
             (task_name, now),
+        )
+
+    return redirect(url_for("index"))
+
+
+@app.post("/schedule/add")
+def add_schedule():
+    name = request.form.get("name", "").strip()
+    start_time = request.form.get("start_time", "").strip()
+    end_time = request.form.get("end_time", "").strip()
+
+    if not name or not start_time or not end_time:
+        return redirect(url_for("index"))
+
+    try:
+        start_clock = datetime.strptime(
+            start_time,
+            "%H:%M",
+        ).time()
+        end_clock = datetime.strptime(
+            end_time,
+            "%H:%M",
+        ).time()
+    except ValueError:
+        return redirect(url_for("index"))
+
+    settings = get_current_settings()
+    timezone = get_configured_timezone(settings)
+    now = datetime.now(timezone)
+
+    planned_start = datetime.combine(
+        now.date(),
+        start_clock,
+        tzinfo=timezone,
+    )
+    planned_end = datetime.combine(
+        now.date(),
+        end_clock,
+        tzinfo=timezone,
+    )
+
+    if planned_end <= planned_start:
+        return redirect(url_for("index"))
+
+    with get_db() as connection:
+        connection.execute(
+            """
+            INSERT INTO plans (
+                name,
+                planned_start,
+                planned_end,
+                created_at
+            )
+            VALUES (?, ?, ?, ?)
+            """,
+            (
+                name,
+                planned_start.isoformat(timespec="seconds"),
+                planned_end.isoformat(timespec="seconds"),
+                now.isoformat(timespec="seconds"),
+            ),
         )
 
     return redirect(url_for("index"))
