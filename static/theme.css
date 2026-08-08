@@ -84,6 +84,10 @@ html[data-accent="cyan"] {
     --accent: #52e7ff;
 }
 
+html[data-accent="pink"] {
+    --accent: #ff33aa;
+}
+
 html[data-accent="purple"] {
     --accent: #a78bfa;
 }
@@ -139,6 +143,10 @@ html[data-theme="light"] {
 /* Light用の高コントラスト版アクセント */
 html[data-theme="light"][data-accent="cyan"] {
     --accent: #147d8f;
+}
+
+html[data-theme="light"][data-accent="pink"] {
+    --accent: #b81470;
 }
 
 html[data-theme="light"][data-accent="purple"] {
@@ -568,6 +576,32 @@ html[data-texture="neumorphism"] .timeline-activity {
         var(--theme-text) 4%,
         transparent
     );
+}
+
+
+/* ========================================
+   ACCENT PREVIEW DOT
+======================================== */
+
+.setting-field label[for="setting-accent-color"] {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.setting-field label[for="setting-accent-color"]::after {
+    content: "";
+
+    width: 9px;
+    height: 9px;
+    flex: 0 0 9px;
+
+    border-radius: 50%;
+    background: var(--accent);
+
+    box-shadow:
+        0 0 0 1px var(--theme-border-strong),
+        0 0 8px var(--accent-30);
 }
 
 
