@@ -141,6 +141,21 @@ th,
     color: var(--muted);
 }
 
+.current-task {
+    color: var(--text);
+    text-shadow: none;
+}
+
+.digital-clock {
+    color: #ffffff;
+    text-shadow:
+        0 0 10px rgba(82, 231, 255, 0.22);
+}
+
+.started-at span {
+    color: #d8dce1;
+}
+
 /* セクション見出しは白、アクセントは必要な箇所だけ */
 .section-heading h2 {
     color: #f4f6f8;
@@ -368,61 +383,6 @@ input[type="text"] {
 
 .timeline-now span {
     font-size: 11px;
-}
-
-
-/* ========================================
-   CURRENT ACTIVITY
-   このカードだけ白地 + 黒文字で強調
-======================================== */
-
-.current-column .current-panel {
-    color: #111318;
-    background: rgba(247, 247, 244, 0.96);
-    border-color: rgba(255, 255, 255, 0.92);
-
-    box-shadow:
-        0 14px 38px rgba(0, 0, 0, 0.42),
-        0 0 0 1px rgba(0, 0, 0, 0.08);
-}
-
-.current-column .current-panel::before {
-    border-color: rgba(0, 0, 0, 0.08);
-}
-
-.current-column .current-panel::after {
-    background: linear-gradient(
-        90deg,
-        transparent,
-        rgba(0, 0, 0, 0.18),
-        transparent
-    );
-}
-
-.current-column .current-panel .panel-label {
-    color: #686d73;
-}
-
-.current-column .current-panel .current-task {
-    color: #0d0f12;
-    text-shadow: none;
-}
-
-.current-column .current-panel .digital-clock {
-    color: #111318;
-    text-shadow: none;
-}
-
-.current-column .current-panel .started-at {
-    color: #6f747b;
-}
-
-.current-column .current-panel .started-at span {
-    color: #17191d;
-}
-
-.current-column .current-panel .inactive {
-    color: #8b9096;
 }
 
 
