@@ -172,7 +172,7 @@
 }
 
 .menu-link:hover {
-    color: var(--accent-bright);
+    color: var(--accent-foreground);
     background: var(--accent-06);
     border-color: var(--accent-22);
 }
