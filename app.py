@@ -29,6 +29,7 @@ ACCENT_COLOR_OPTIONS = {
 
 TIMEZONE_NAMES = sorted(available_timezones())
 TIMEZONE_NAME_SET = set(TIMEZONE_NAMES)
+SCHEDULE_MINUTES = {0, 10, 20, 30, 40, 50}
 
 
 def get_db():
@@ -254,6 +255,7 @@ def build_timeline_items(
 
 
 def layout_schedule_group(group):
+    """Assign overlapping schedules to horizontal lanes."""
     lane_ends = []
 
     for item in group:
@@ -496,6 +498,7 @@ def index():
         schedule_items=schedule_items,
         settings=settings,
         timezone_names=TIMEZONE_NAMES,
+        today_date=today,
     )
 
 
@@ -568,36 +571,63 @@ def start_activity():
 @app.post("/schedule/add")
 def add_schedule():
     name = request.form.get("name", "").strip()
-    start_time = request.form.get("start_time", "").strip()
-    end_time = request.form.get("end_time", "").strip()
+    schedule_date = request.form.get("schedule_date", "").strip()
+    start_hour = request.form.get("start_hour", "").strip()
+    start_minute = request.form.get("start_minute", "").strip()
+    end_hour = request.form.get("end_hour", "").strip()
+    end_minute = request.form.get("end_minute", "").strip()
 
-    if not name or not start_time or not end_time:
+    if not all(
+        (
+            name,
+            schedule_date,
+            start_hour,
+            start_minute,
+            end_hour,
+            end_minute,
+        )
+    ):
         return redirect(url_for("index"))
 
     try:
-        start_clock = datetime.strptime(
-            start_time,
-            "%H:%M",
-        ).time()
-        end_clock = datetime.strptime(
-            end_time,
-            "%H:%M",
-        ).time()
+        target_date = datetime.strptime(
+            schedule_date,
+            "%Y-%m-%d",
+        ).date()
+
+        start_hour_value = int(start_hour)
+        start_minute_value = int(start_minute)
+        end_hour_value = int(end_hour)
+        end_minute_value = int(end_minute)
     except ValueError:
+        return redirect(url_for("index"))
+
+    if (
+        start_hour_value not in range(24)
+        or end_hour_value not in range(24)
+        or start_minute_value not in SCHEDULE_MINUTES
+        or end_minute_value not in SCHEDULE_MINUTES
+    ):
         return redirect(url_for("index"))
 
     settings = get_current_settings()
     timezone = get_configured_timezone(settings)
     now = datetime.now(timezone)
 
-    planned_start = datetime.combine(
-        now.date(),
-        start_clock,
+    planned_start = datetime(
+        target_date.year,
+        target_date.month,
+        target_date.day,
+        start_hour_value,
+        start_minute_value,
         tzinfo=timezone,
     )
-    planned_end = datetime.combine(
-        now.date(),
-        end_clock,
+    planned_end = datetime(
+        target_date.year,
+        target_date.month,
+        target_date.day,
+        end_hour_value,
+        end_minute_value,
         tzinfo=timezone,
     )
 
