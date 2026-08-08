@@ -1,64 +1,40 @@
 /* ========================================
    THEME TOKENS
-   Settings実装時は、ここをテーマ設定の入口にする。
+   Settings画面から data-* 属性を切り替えて使う。
 ======================================== */
 
 :root {
-    /* ========================================
-       ACCENT COLOR
-       動作確認するときは、この1行だけ変更する。
-       例: #ff5ca8 / #9b7cff / #7ee787 / #ff9f43
-    ======================================== */
+    /* Accent default */
     --accent: #52e7ff;
 
-    /* accentから自動生成する派生色 */
     --accent-bright:
         color-mix(in srgb, var(--accent) 72%, white);
-
     --accent-dark:
         color-mix(in srgb, var(--accent) 62%, black);
 
     --accent-04:
         color-mix(in srgb, var(--accent) 4%, transparent);
-
     --accent-06:
         color-mix(in srgb, var(--accent) 6%, transparent);
-
     --accent-08:
         color-mix(in srgb, var(--accent) 8%, transparent);
-
-    --accent-10:
-        color-mix(in srgb, var(--accent) 10%, transparent);
-
     --accent-12:
         color-mix(in srgb, var(--accent) 12%, transparent);
-
     --accent-16:
         color-mix(in srgb, var(--accent) 16%, transparent);
-
     --accent-22:
         color-mix(in srgb, var(--accent) 22%, transparent);
-
     --accent-30:
         color-mix(in srgb, var(--accent) 30%, transparent);
-
     --accent-40:
         color-mix(in srgb, var(--accent) 40%, transparent);
-
     --accent-55:
         color-mix(in srgb, var(--accent) 55%, transparent);
-
     --accent-70:
         color-mix(in srgb, var(--accent) 70%, transparent);
 
-
-    /* ========================================
-       BASE THEME: DARK
-       後で Settings から theme を切り替える想定。
-    ======================================== */
-
+    /* Dark theme default */
     --theme-background: #07090c;
-
     --theme-text: #f1f3f5;
     --theme-text-soft: #d9dde2;
     --theme-muted: #9299a2;
@@ -66,6 +42,7 @@
 
     --theme-panel: rgba(12, 14, 18, 0.84);
     --theme-panel-strong: rgba(9, 11, 14, 0.88);
+    --theme-panel-solid: #111419;
 
     --theme-control: #20242a;
     --theme-control-hover: #2a3037;
@@ -79,26 +56,77 @@
 
     --theme-shadow: rgba(0, 0, 0, 0.34);
 
+    --neu-highlight: rgba(255, 255, 255, 0.045);
+    --neu-shadow: rgba(0, 0, 0, 0.62);
 
-    /* ========================================
-       既存CSSとの互換用エイリアス
-       古い --cyan 系も --accent に追従する。
-    ======================================== */
-
+    /* 既存CSSとの互換用 */
     --background: var(--theme-background);
-
     --text: var(--theme-text);
     --muted: var(--theme-muted);
-
     --border: var(--theme-border);
     --border-bright: var(--theme-border-strong);
-
     --glass-background: var(--theme-panel-strong);
     --glass-background-light: var(--theme-panel);
-
     --cyan: var(--accent);
     --cyan-bright: var(--accent-bright);
     --cyan-dark: var(--accent-dark);
+}
+
+
+/* ========================================
+   ACCENT COLOR
+======================================== */
+
+html[data-accent="cyan"] {
+    --accent: #52e7ff;
+}
+
+html[data-accent="purple"] {
+    --accent: #a78bfa;
+}
+
+html[data-accent="green"] {
+    --accent: #6ee7b7;
+}
+
+html[data-accent="orange"] {
+    --accent: #fb923c;
+}
+
+html[data-accent="none"] {
+    --accent: #b8bec7;
+}
+
+
+/* ========================================
+   MAIN THEME
+======================================== */
+
+html[data-theme="light"] {
+    --theme-background: #e5e8ec;
+    --theme-text: #181b20;
+    --theme-text-soft: #353a42;
+    --theme-muted: #6c737d;
+    --theme-disabled: #9a9fa7;
+
+    --theme-panel: rgba(242, 244, 247, 0.86);
+    --theme-panel-strong: rgba(236, 239, 243, 0.92);
+    --theme-panel-solid: #eceff2;
+
+    --theme-control: #d9dde2;
+    --theme-control-hover: #eef0f3;
+
+    --theme-input: rgba(255, 255, 255, 0.58);
+    --theme-input-focus: rgba(255, 255, 255, 0.82);
+
+    --theme-border: rgba(18, 24, 32, 0.12);
+    --theme-border-strong: rgba(18, 24, 32, 0.20);
+    --theme-divider: rgba(18, 24, 32, 0.09);
+
+    --theme-shadow: rgba(38, 43, 52, 0.16);
+
+    --neu-highlight: rgba(255, 255, 255, 0.92);
+    --neu-shadow: rgba(160, 168, 178, 0.52);
 }
 
 
@@ -120,17 +148,26 @@ body {
         no-repeat;
 }
 
+html[data-theme="light"] body {
+    background:
+        linear-gradient(
+            rgba(236, 239, 243, 0.72),
+            rgba(222, 226, 232, 0.82)
+        ),
+        url("images/background.png")
+        center center / cover
+        fixed
+        no-repeat;
+}
+
 .current-panel,
 .control-panel,
 .todo-panel,
 .history-panel,
 .timeline-panel {
+    color: var(--theme-text);
     background: var(--theme-panel);
     border-color: var(--theme-border);
-
-    box-shadow:
-        0 10px 30px var(--theme-shadow),
-        inset 0 1px 0 rgba(255, 255, 255, 0.025);
 }
 
 .panel-label,
@@ -196,16 +233,6 @@ button {
     color: var(--theme-text);
     background: var(--theme-control);
     border-color: var(--theme-border-strong);
-    box-shadow: none;
-}
-
-button:hover {
-    color: #ffffff;
-    background: var(--theme-control-hover);
-    border-color: var(--accent-55);
-
-    box-shadow:
-        0 0 0 1px var(--accent-08);
 }
 
 .quick-start {
@@ -214,23 +241,17 @@ button:hover {
 
 .quick-start-button {
     color: var(--theme-text-soft);
-    background: rgba(255, 255, 255, 0.035);
-    border-color: var(--theme-border-strong);
-    box-shadow: none;
 }
 
+button:disabled,
 .quick-start-button:disabled,
 .todo-start-button:disabled {
     color: var(--theme-disabled);
-    background: rgba(255, 255, 255, 0.025);
-    border-color: var(--theme-divider);
-    box-shadow: none;
 }
 
 
 /* ========================================
    ACCENT APPLICATION
-   水色などの具体色はここに書かず --accent を使う。
 ======================================== */
 
 ::selection {
@@ -261,31 +282,6 @@ button:hover {
         0 0 8px var(--accent-40);
 }
 
-.start-form button,
-.todo-add-form button,
-.todo-start-button {
-    color: #061014;
-    background: var(--accent);
-    border-color: var(--accent-bright);
-
-    box-shadow:
-        0 0 12px var(--accent-16);
-}
-
-.start-form button:hover,
-.todo-add-form button:hover,
-.todo-start-button:hover {
-    color: #061014;
-    background: var(--accent-bright);
-    border-color: var(--accent-bright);
-}
-
-.quick-start-button:hover {
-    color: var(--accent-bright);
-    background: var(--accent-06);
-    border-color: var(--accent-55);
-}
-
 .todo-check-form input[type="checkbox"] {
     accent-color: var(--accent);
 }
@@ -296,8 +292,12 @@ button:hover {
 
 .timeline-activity {
     color: var(--theme-text);
-    background: rgba(255, 255, 255, 0.055);
-    border-left-color: rgba(255, 255, 255, 0.24);
+    background: color-mix(
+        in srgb,
+        var(--theme-text) 5%,
+        transparent
+    );
+    border-left-color: var(--theme-border-strong);
     box-shadow: none;
 }
 
@@ -325,22 +325,38 @@ button:hover {
 
 .timeline-now span {
     color: var(--accent-bright);
-    background: rgba(7, 9, 12, 0.94);
+    background: var(--theme-panel-strong);
 }
 
 .timeline-scroll {
     scrollbar-color:
-        rgba(255, 255, 255, 0.22)
-        rgba(255, 255, 255, 0.03);
+        var(--theme-border-strong)
+        var(--theme-divider);
 }
 
 
 /* ========================================
-   TACTILE BUTTONS
-   スキューモーフィズム寄りの「押せる」立体表現。
+   TEXTURE: GLASS
 ======================================== */
 
-button {
+html[data-texture="glass"] .current-panel,
+html[data-texture="glass"] .control-panel,
+html[data-texture="glass"] .todo-panel,
+html[data-texture="glass"] .history-panel,
+html[data-texture="glass"] .timeline-panel {
+    background: var(--theme-panel);
+    border: 1px solid var(--theme-border);
+
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+
+    box-shadow:
+        0 10px 30px var(--theme-shadow),
+        inset 0 1px 0 rgba(255, 255, 255, 0.025);
+}
+
+/* 今の物理キー表現をGlassのボタンとして残す */
+html[data-texture="glass"] button {
     position: relative;
     top: 0;
 
@@ -360,53 +376,31 @@ button {
         0 3px 0 rgba(0, 0, 0, 0.72),
         0 5px 10px rgba(0, 0, 0, 0.24);
 
-    transform: translateY(0);
-
     transition:
-        transform 80ms ease,
         top 80ms ease,
         border-color 120ms ease,
         box-shadow 120ms ease,
         filter 120ms ease;
 }
 
-button:hover {
+html[data-texture="glass"] button:hover {
     top: -1px;
-
-    background:
-        linear-gradient(
-            180deg,
-            color-mix(in srgb, var(--theme-control-hover) 86%, white),
-            var(--theme-control-hover) 52%,
-            color-mix(in srgb, var(--theme-control-hover) 78%, black)
-        );
-
     border-color: var(--accent-55);
-
-    box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.14),
-        inset 0 -2px 0 rgba(0, 0, 0, 0.35),
-        0 4px 0 rgba(0, 0, 0, 0.74),
-        0 7px 12px rgba(0, 0, 0, 0.28),
-        0 0 0 1px var(--accent-08);
 }
 
-button:active {
+html[data-texture="glass"] button:active {
     top: 2px;
-    transform: translateY(0);
 
     box-shadow:
         inset 0 2px 5px rgba(0, 0, 0, 0.48),
-        inset 0 1px 0 rgba(255, 255, 255, 0.04),
         0 1px 0 rgba(0, 0, 0, 0.74);
-
-    filter: brightness(0.94);
 }
 
-/* 主要操作は「発光する物理キー」っぽくする */
-.start-form button,
-.todo-add-form button,
-.todo-start-button {
+html[data-texture="glass"] .start-form button,
+html[data-texture="glass"] .todo-add-form button,
+html[data-texture="glass"] .todo-start-button {
+    color: #061014;
+
     background:
         linear-gradient(
             180deg,
@@ -425,51 +419,144 @@ button:active {
         0 0 12px var(--accent-16);
 }
 
-.start-form button:hover,
-.todo-add-form button:hover,
-.todo-start-button:hover {
-    top: -1px;
 
-    background:
-        linear-gradient(
-            180deg,
-            color-mix(in srgb, var(--accent-bright) 78%, white),
-            var(--accent-bright) 48%,
-            var(--accent)
-        );
+/* ========================================
+   TEXTURE: FLAT
+======================================== */
 
-    box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.52),
-        inset 0 -2px 0 rgba(0, 0, 0, 0.20),
-        0 4px 0 var(--accent-dark),
-        0 7px 12px rgba(0, 0, 0, 0.28),
-        0 0 16px var(--accent-22);
+html[data-texture="flat"] .current-panel,
+html[data-texture="flat"] .control-panel,
+html[data-texture="flat"] .todo-panel,
+html[data-texture="flat"] .history-panel,
+html[data-texture="flat"] .timeline-panel {
+    background: var(--theme-panel-solid);
+    border: 1px solid var(--theme-border);
+
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+
+    box-shadow: none;
 }
 
-.start-form button:active,
-.todo-add-form button:active,
-.todo-start-button:active {
-    top: 2px;
+html[data-texture="flat"] button {
+    top: 0;
 
-    box-shadow:
-        inset 0 3px 6px rgba(0, 0, 0, 0.34),
-        inset 0 1px 0 rgba(255, 255, 255, 0.18),
-        0 1px 0 var(--accent-dark),
-        0 0 8px var(--accent-12);
+    background: var(--theme-control);
+    border: 1px solid var(--theme-border-strong);
+    box-shadow: none;
+
+    transition:
+        background 120ms ease,
+        border-color 120ms ease;
 }
 
-/* disabledは押せそうに見せない */
+html[data-texture="flat"] button:hover {
+    background: var(--theme-control-hover);
+    border-color: var(--accent-55);
+}
+
+html[data-texture="flat"] .start-form button,
+html[data-texture="flat"] .todo-add-form button,
+html[data-texture="flat"] .todo-start-button {
+    color: #061014;
+    background: var(--accent);
+    border-color: var(--accent);
+}
+
+
+/* ========================================
+   TEXTURE: NEUMORPHISM
+======================================== */
+
+html[data-texture="neumorphism"] body {
+    background: var(--theme-background);
+}
+
+html[data-texture="neumorphism"] .current-panel,
+html[data-texture="neumorphism"] .control-panel,
+html[data-texture="neumorphism"] .todo-panel,
+html[data-texture="neumorphism"] .history-panel,
+html[data-texture="neumorphism"] .timeline-panel {
+    background: var(--theme-background);
+    border: none;
+
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+
+    box-shadow:
+        -8px -8px 18px var(--neu-highlight),
+        8px 8px 18px var(--neu-shadow);
+}
+
+html[data-texture="neumorphism"] input[type="text"] {
+    background: var(--theme-background);
+    border: none;
+
+    box-shadow:
+        inset 3px 3px 7px var(--neu-shadow),
+        inset -3px -3px 7px var(--neu-highlight);
+}
+
+html[data-texture="neumorphism"] button {
+    top: 0;
+
+    color: var(--theme-text-soft);
+    background: var(--theme-background);
+    border: none;
+
+    box-shadow:
+        -4px -4px 9px var(--neu-highlight),
+        4px 4px 9px var(--neu-shadow);
+
+    transition:
+        color 120ms ease,
+        box-shadow 100ms ease;
+}
+
+html[data-texture="neumorphism"] button:hover {
+    color: var(--accent);
+}
+
+html[data-texture="neumorphism"] button:active {
+    box-shadow:
+        inset 3px 3px 7px var(--neu-shadow),
+        inset -3px -3px 7px var(--neu-highlight);
+}
+
+html[data-texture="neumorphism"] .start-form button,
+html[data-texture="neumorphism"] .todo-add-form button,
+html[data-texture="neumorphism"] .todo-start-button {
+    color: var(--accent);
+    background: var(--theme-background);
+    border: none;
+}
+
+html[data-texture="neumorphism"] .timeline-activity {
+    background: color-mix(
+        in srgb,
+        var(--theme-text) 4%,
+        transparent
+    );
+}
+
+
+/* ========================================
+   DISABLED
+======================================== */
+
 button:disabled,
 .quick-start-button:disabled,
 .todo-start-button:disabled {
-    top: 0;
-    transform: none;
-    filter: none;
+    top: 0 !important;
 
-    color: var(--theme-disabled);
-    background: rgba(255, 255, 255, 0.025);
-    border-color: var(--theme-divider);
+    color: var(--theme-disabled) !important;
+    background: color-mix(
+        in srgb,
+        var(--theme-text) 2%,
+        transparent
+    ) !important;
+    border-color: var(--theme-divider) !important;
 
     box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.025);
+        inset 0 1px 0 rgba(255, 255, 255, 0.025) !important;
 }
