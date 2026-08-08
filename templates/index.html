@@ -1,5 +1,10 @@
 <!doctype html>
-<html lang="ja">
+<html
+    lang="ja"
+    data-texture="{{ settings['texture'] }}"
+    data-theme="{{ settings['main_theme'] }}"
+    data-accent="{{ settings['accent_color'] }}"
+>
 <head>
     <meta charset="UTF-8">
     <meta
@@ -32,15 +37,207 @@
         rel="stylesheet"
         href="{{ url_for('static', filename='theme.css') }}"
     >
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='navigation.css') }}"
+    >
 </head>
 
 <body>
+    <div
+        id="menu-backdrop"
+        class="menu-backdrop"
+    ></div>
+
+    <aside
+        id="app-menu"
+        class="app-menu"
+        aria-hidden="true"
+    >
+        <div class="menu-header">
+            <h2>MENU</h2>
+
+            <button
+                id="menu-close"
+                class="menu-close"
+                type="button"
+                aria-label="メニューを閉じる"
+            >
+                ×
+            </button>
+        </div>
+
+        <nav class="menu-nav">
+            <a
+                href="#activity-log"
+                class="menu-link"
+                data-menu-close
+            >
+                <span>ACTIVITY LOG</span>
+                <span>最近の記録</span>
+            </a>
+        </nav>
+
+        <section class="settings-section">
+            <div class="settings-heading">
+                <h2>SETTINGS</h2>
+                <span>表示と時間の設定</span>
+            </div>
+
+            <form
+                method="post"
+                action="{{ url_for('update_settings') }}"
+                class="settings-form"
+            >
+                <div class="settings-group">
+                    <h3 class="settings-group-title">
+                        THEME
+                    </h3>
+
+                    <div class="setting-field">
+                        <label for="setting-texture">
+                            TEXTURE
+                        </label>
+
+                        <select
+                            id="setting-texture"
+                            name="texture"
+                        >
+                            {% for value, label in [
+                                ("glass", "Glass"),
+                                ("flat", "Flat"),
+                                ("neumorphism", "Neumorphism")
+                            ] %}
+                                <option
+                                    value="{{ value }}"
+                                    {% if settings["texture"] == value %}
+                                        selected
+                                    {% endif %}
+                                >
+                                    {{ label }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="setting-field">
+                        <label for="setting-main-theme">
+                            MAIN THEME
+                        </label>
+
+                        <select
+                            id="setting-main-theme"
+                            name="main_theme"
+                        >
+                            {% for value, label in [
+                                ("dark", "Dark"),
+                                ("light", "Light")
+                            ] %}
+                                <option
+                                    value="{{ value }}"
+                                    {% if settings["main_theme"] == value %}
+                                        selected
+                                    {% endif %}
+                                >
+                                    {{ label }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="setting-field">
+                        <label for="setting-accent-color">
+                            ACCENT COLOR
+                        </label>
+
+                        <select
+                            id="setting-accent-color"
+                            name="accent_color"
+                        >
+                            {% for value, label in [
+                                ("cyan", "Cyan"),
+                                ("purple", "Purple"),
+                                ("green", "Green"),
+                                ("orange", "Orange"),
+                                ("none", "None")
+                            ] %}
+                                <option
+                                    value="{{ value }}"
+                                    {% if settings["accent_color"] == value %}
+                                        selected
+                                    {% endif %}
+                                >
+                                    {{ label }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="settings-group">
+                    <h3 class="settings-group-title">
+                        TIME ZONE
+                    </h3>
+
+                    <div class="setting-field">
+                        <label for="setting-timezone">
+                            ZONE
+                        </label>
+
+                        <select
+                            id="setting-timezone"
+                            name="timezone"
+                        >
+                            {% for timezone_name in timezone_names %}
+                                <option
+                                    value="{{ timezone_name }}"
+                                    {% if settings["timezone"] == timezone_name %}
+                                        selected
+                                    {% endif %}
+                                >
+                                    {{ timezone_name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <p class="settings-note">
+                        時計・TODAY TIMELINE・表示時刻に反映されます。
+                    </p>
+                </div>
+
+                <button
+                    type="submit"
+                    class="settings-save"
+                >
+                    SAVE SETTINGS
+                </button>
+            </form>
+        </section>
+    </aside>
+
+
     <main class="app-container">
         <header class="app-header">
-            <h1>DAILY TIMELINE</h1>
+            <div class="header-brand">
+                <button
+                    id="menu-toggle"
+                    class="menu-toggle"
+                    type="button"
+                    aria-label="メニューを開く"
+                    aria-controls="app-menu"
+                    aria-expanded="false"
+                >
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+
+                <h1>DAILY TIMELINE</h1>
+            </div>
 
             <div class="current-time-widget">
-                <span>LOCAL TIME</span>
+                <span>{{ settings["timezone"] }}</span>
                 <strong id="current-time-clock">--:--:--</strong>
             </div>
         </header>
@@ -255,8 +452,11 @@
                 </section>
 
 
-                <!-- ACTIVITY LOG（将来は別ページへ移動予定） -->
-                <section class="history-panel">
+                <!-- ACTIVITY LOG -->
+                <section
+                    id="activity-log"
+                    class="history-panel"
+                >
                     <div class="section-heading">
                         <h2>ACTIVITY LOG</h2>
                         <span>最近の記録</span>
@@ -386,6 +586,104 @@
 
 
     <script>
+        const appTimeZone =
+            {{ settings["timezone"] | tojson }};
+
+        const appTimeFormatter =
+            new Intl.DateTimeFormat(
+                "en-GB",
+                {
+                    timeZone: appTimeZone,
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    second: "2-digit",
+                    hourCycle: "h23"
+                }
+            );
+
+
+        function getConfiguredTimeParts() {
+            const parts = appTimeFormatter
+                .formatToParts(new Date());
+
+            const values = {};
+
+            parts.forEach(part => {
+                if (
+                    part.type === "hour"
+                    || part.type === "minute"
+                    || part.type === "second"
+                ) {
+                    values[part.type] = Number(part.value);
+                }
+            });
+
+            return values;
+        }
+
+
+        function openMenu() {
+            const menu =
+                document.getElementById("app-menu");
+            const backdrop =
+                document.getElementById("menu-backdrop");
+            const toggle =
+                document.getElementById("menu-toggle");
+
+            menu.classList.add("is-open");
+            backdrop.classList.add("is-open");
+            menu.setAttribute("aria-hidden", "false");
+            toggle.setAttribute("aria-expanded", "true");
+        }
+
+
+        function closeMenu() {
+            const menu =
+                document.getElementById("app-menu");
+            const backdrop =
+                document.getElementById("menu-backdrop");
+            const toggle =
+                document.getElementById("menu-toggle");
+
+            menu.classList.remove("is-open");
+            backdrop.classList.remove("is-open");
+            menu.setAttribute("aria-hidden", "true");
+            toggle.setAttribute("aria-expanded", "false");
+        }
+
+
+        function initializeMenu() {
+            const toggle =
+                document.getElementById("menu-toggle");
+            const closeButton =
+                document.getElementById("menu-close");
+            const backdrop =
+                document.getElementById("menu-backdrop");
+
+            toggle.addEventListener("click", openMenu);
+            closeButton.addEventListener("click", closeMenu);
+            backdrop.addEventListener("click", closeMenu);
+
+            document
+                .querySelectorAll("[data-menu-close]")
+                .forEach(element => {
+                    element.addEventListener(
+                        "click",
+                        closeMenu
+                    );
+                });
+
+            document.addEventListener(
+                "keydown",
+                event => {
+                    if (event.key === "Escape") {
+                        closeMenu();
+                    }
+                }
+            );
+        }
+
+
         function initializeTimelinePositions() {
             document
                 .querySelectorAll(".timeline-hour")
@@ -420,12 +718,12 @@
                 return;
             }
 
-            const now = new Date();
+            const time = getConfiguredTimeParts();
 
             const currentMinute =
-                now.getHours() * 60
-                + now.getMinutes()
-                + now.getSeconds() / 60;
+                time.hour * 60
+                + time.minute
+                + time.second / 60;
 
             nowLine.style.top =
                 `${currentMinute / 1440 * 100}%`;
@@ -436,11 +734,11 @@
                 );
 
             const hours =
-                String(now.getHours())
+                String(time.hour)
                     .padStart(2, "0");
 
             const minutes =
-                String(now.getMinutes())
+                String(time.minute)
                     .padStart(2, "0");
 
             label.textContent =
@@ -479,12 +777,12 @@
                 return;
             }
 
-            const now = new Date();
+            const time = getConfiguredTimeParts();
 
             clock.textContent = [
-                now.getHours(),
-                now.getMinutes(),
-                now.getSeconds()
+                time.hour,
+                time.minute,
+                time.second
             ]
                 .map(value =>
                     String(value).padStart(2, "0")
@@ -538,6 +836,7 @@
 
 
         window.addEventListener("DOMContentLoaded", () => {
+            initializeMenu();
             initializeTimelinePositions();
             updateTimeline();
             updateCurrentClock();
