@@ -114,13 +114,19 @@
     right: 8px;
     z-index: 2;
 
-    min-height: 18px;
-    padding: 2px 7px;
+    /* 実際の時間の長さを優先する。
+       短いActivityを無理に18pxへ引き伸ばさない。 */
+    min-height: 2px;
+    padding: 0 7px;
     overflow: hidden;
 
     display: flex;
     align-items: center;
     gap: 10px;
+
+    /* 子要素が、このブロック自身の高さを基準に
+       表示可否を判断できるようにする。 */
+    container-type: size;
 
     color: var(--text);
     background: rgba(82, 231, 255, 0.09);
@@ -166,6 +172,15 @@
 
     font-size: 10px;
     white-space: nowrap;
+}
+
+/* 文字を安全に置けないほど短いActivityは、
+   実時間どおりの細いブロックだけ表示する。 */
+@container (max-height: 19px) {
+    .timeline-activity-name,
+    .timeline-activity-time {
+        display: none;
+    }
 }
 
 /* ========================================
