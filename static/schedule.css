@@ -65,11 +65,12 @@
 }
 
 .timeline-plan-layer .timeline-activity {
-    /* timeline.css normally positions actual activities using
-       left/right against timeline-body. Once moved into the shared
-       lane layer, percentages should use this layer instead. */
     left: var(--schedule-left, 0%);
     right: auto;
+}
+
+.timeline-plan-layer .is-editable-entry {
+    cursor: pointer;
 }
 
 
@@ -182,6 +183,11 @@
     color: var(--accent-foreground);
 }
 
+
+/* ========================================
+   TIMELINE ENTRY ACTIONS
+======================================== */
+
 .timeline-plan-delete-form {
     position: absolute;
     top: 3px;
@@ -189,6 +195,49 @@
     z-index: 50;
 
     margin: 0;
+}
+
+.timeline-entry-edit-button {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    z-index: 50;
+
+    width: 28px !important;
+    min-width: 28px !important;
+    height: 28px;
+    padding: 0 !important;
+
+    display: grid;
+    place-items: center;
+
+    color: var(--theme-muted);
+    background: var(--theme-panel-solid);
+    border: 1px solid var(--theme-border-strong);
+    border-radius: 7px;
+
+    opacity: 0;
+    pointer-events: none;
+
+    box-shadow: 0 4px 12px var(--theme-shadow);
+
+    transition:
+        opacity 100ms ease,
+        color 100ms ease,
+        background 100ms ease,
+        border-color 100ms ease;
+}
+
+.timeline-plan .timeline-entry-edit-button {
+    right: 34px;
+}
+
+.timeline-entry-edit-button svg,
+.timeline-plan-delete-button svg,
+.todo-delete-button svg {
+    width: 14px;
+    height: 14px;
+    display: block;
 }
 
 .timeline-plan-delete-button,
@@ -209,13 +258,6 @@
     box-shadow: 0 4px 12px var(--theme-shadow);
 }
 
-.timeline-plan-delete-button svg,
-.todo-delete-button svg {
-    width: 14px;
-    height: 14px;
-    display: block;
-}
-
 .timeline-plan-delete-button {
     opacity: 0;
     pointer-events: none;
@@ -227,10 +269,22 @@
         border-color 100ms ease;
 }
 
+.timeline-activity:hover .timeline-entry-edit-button,
+.timeline-activity:focus-within .timeline-entry-edit-button,
+.timeline-plan:hover .timeline-entry-edit-button,
+.timeline-plan:focus-within .timeline-entry-edit-button,
 .timeline-plan:hover .timeline-plan-delete-button,
 .timeline-plan:focus-within .timeline-plan-delete-button {
     opacity: 1;
     pointer-events: auto;
+}
+
+.timeline-entry-edit-button:hover {
+    color: var(--accent-foreground);
+    background: var(--accent-10);
+    border-color: var(--accent-40);
+
+    box-shadow: 0 4px 12px var(--accent-08);
 }
 
 .timeline-plan-delete-button:hover,
@@ -318,7 +372,7 @@
 
 
 /* ========================================
-   ADD SCHEDULE DIALOG
+   ADD / EDIT DIALOG
 ======================================== */
 
 .schedule-dialog {
@@ -333,6 +387,10 @@
     border-radius: 12px;
 
     overflow: visible;
+}
+
+.timeline-edit-dialog {
+    width: min(560px, calc(100vw - 36px));
 }
 
 .schedule-dialog::backdrop {
@@ -397,7 +455,8 @@
 }
 
 .schedule-field > span:first-child,
-.schedule-clock-field legend {
+.schedule-clock-field legend,
+.timeline-edit-period legend {
     color: var(--theme-muted);
 
     font-size: 10px;
@@ -450,13 +509,15 @@
     font-size: 12px;
 }
 
-.schedule-time-grid {
+.schedule-time-grid,
+.timeline-edit-range {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
 }
 
-.schedule-clock-field {
+.schedule-clock-field,
+.timeline-edit-period {
     min-width: 0;
     margin: 0;
     padding: 0;
@@ -464,8 +525,14 @@
     border: 0;
 }
 
-.schedule-clock-field legend {
+.schedule-clock-field legend,
+.timeline-edit-period legend {
     margin-bottom: 6px;
+}
+
+.timeline-edit-period {
+    display: grid;
+    gap: 8px;
 }
 
 .schedule-clock-selects {
@@ -516,6 +583,36 @@
     outline-offset: 1px;
 }
 
+.timeline-edit-current-note {
+    padding: 10px 12px;
+
+    color: var(--theme-muted);
+    background: var(--theme-input);
+    border: 1px solid var(--theme-border-strong);
+    border-radius: 7px;
+
+    font-size: 10px;
+    letter-spacing: 0.05em;
+}
+
+.timeline-edit-current-note strong {
+    margin-left: 6px;
+
+    color: var(--accent-foreground);
+    font-family:
+        "Share Tech Mono",
+        Consolas,
+        "Courier New",
+        monospace;
+}
+
+.timeline-edit-current-note span {
+    display: block;
+    margin-top: 4px;
+
+    letter-spacing: 0;
+}
+
 .schedule-dialog-actions {
     display: flex;
     justify-content: flex-end;
@@ -562,7 +659,8 @@ html[data-texture="neumorphism"] .schedule-dialog-shell {
 
 html[data-texture="neumorphism"] .schedule-field input[type="text"],
 html[data-texture="neumorphism"] .schedule-date-input-shell,
-html[data-texture="neumorphism"] .schedule-clock-selects select {
+html[data-texture="neumorphism"] .schedule-clock-selects select,
+html[data-texture="neumorphism"] .timeline-edit-current-note {
     background: var(--theme-background);
     border: none;
 
@@ -596,12 +694,14 @@ html[data-texture="neumorphism"] .timeline-add-schedule:active {
         font-size: 9px !important;
     }
 
+    .timeline-entry-edit-button,
     .timeline-plan-delete-button {
         opacity: 1;
         pointer-events: auto;
     }
 
-    .schedule-time-grid {
+    .schedule-time-grid,
+    .timeline-edit-range {
         grid-template-columns: 1fr;
     }
 }
