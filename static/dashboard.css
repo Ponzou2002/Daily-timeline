@@ -57,20 +57,351 @@
 }
 
 .current-column .history-panel .activity-date {
-    font-size: 14px;
-    margin-bottom: 4px;
-    padding-bottom: 5px;
+    font-size: 15px;
+    margin-bottom: 5px;
+    padding-bottom: 6px;
 }
 
 .current-column .history-panel th,
 .current-column .history-panel td {
-    padding: 6px 5px;
-    font-size: 9px;
+    padding: 7px 6px;
+    font-size: 11px;
 }
 
 .current-column .history-panel .activity-name {
-    font-size: 10px;
+    font-size: 12px;
 }
+
+
+/* ========================================
+   NEUTRAL DARK THEME
+   黒・グレー・白を基本に、水色はアクセントのみ
+======================================== */
+
+:root {
+    --background: #07090c;
+
+    --cyan: #52e7ff;
+    --cyan-bright: #a1f5ff;
+    --cyan-dark: #13788a;
+
+    --text: #f1f3f5;
+    --muted: #9299a2;
+
+    --border: rgba(255, 255, 255, 0.12);
+    --border-bright: rgba(255, 255, 255, 0.20);
+
+    --glass-background: rgba(9, 11, 14, 0.88);
+    --glass-background-light: rgba(12, 14, 18, 0.84);
+}
+
+body {
+    color: var(--text);
+
+    background:
+        linear-gradient(
+            rgba(0, 0, 0, 0.52),
+            rgba(0, 0, 0, 0.72)
+        ),
+        url("images/background.png")
+        center center / cover
+        fixed
+        no-repeat;
+}
+
+/* カードはニュートラルな黒・グレー */
+.current-panel,
+.control-panel,
+.todo-panel,
+.history-panel,
+.timeline-panel {
+    background: var(--glass-background-light);
+    border-color: var(--border);
+
+    box-shadow:
+        0 10px 30px rgba(0, 0, 0, 0.34),
+        inset 0 1px 0 rgba(255, 255, 255, 0.025);
+}
+
+.current-panel {
+    border-color: rgba(255, 255, 255, 0.16);
+}
+
+.current-panel::before {
+    border-color: rgba(255, 255, 255, 0.06);
+}
+
+.current-panel::after {
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.14),
+        transparent
+    );
+}
+
+/* タイトルだけアクセント色を残す */
+.app-header h1 {
+    color: var(--cyan);
+    text-shadow:
+        0 0 10px rgba(82, 231, 255, 0.28);
+}
+
+.panel-label,
+.quick-start-label,
+.start-form label,
+.section-heading span,
+th,
+.timeline-hour-label,
+.timeline-activity-time,
+.started-at {
+    color: var(--muted);
+}
+
+.current-task {
+    color: var(--text);
+    text-shadow: none;
+}
+
+.digital-clock {
+    color: #ffffff;
+    text-shadow:
+        0 0 10px rgba(82, 231, 255, 0.22);
+}
+
+.started-at span {
+    color: #d8dce1;
+}
+
+/* セクション見出しは白、アクセントは必要な箇所だけ */
+.section-heading h2 {
+    color: #f4f6f8;
+    text-shadow: none;
+}
+
+.activity-date {
+    color: #e8ebef;
+    border-bottom-color: rgba(255, 255, 255, 0.12);
+    text-shadow: none;
+}
+
+.activity-date::before {
+    background: var(--cyan);
+    box-shadow: 0 0 8px rgba(82, 231, 255, 0.40);
+}
+
+/* 入力 */
+input[type="text"] {
+    color: #f4f6f8;
+    background: rgba(0, 0, 0, 0.34);
+    border-color: rgba(255, 255, 255, 0.14);
+}
+
+input[type="text"]::placeholder {
+    color: #6f7680;
+}
+
+input[type="text"]:focus {
+    background: rgba(0, 0, 0, 0.48);
+    border-color: rgba(82, 231, 255, 0.65);
+
+    box-shadow:
+        0 0 0 2px rgba(82, 231, 255, 0.08);
+}
+
+/* 通常ボタンは白黒ベース */
+button {
+    color: #f1f3f5;
+    background: #20242a;
+    border-color: rgba(255, 255, 255, 0.18);
+
+    box-shadow: none;
+}
+
+button:hover {
+    color: #ffffff;
+    background: #2a3037;
+    border-color: rgba(82, 231, 255, 0.55);
+
+    box-shadow:
+        0 0 0 1px rgba(82, 231, 255, 0.08);
+}
+
+/* START / ADDは主要操作なのでアクセント */
+.start-form button,
+.todo-add-form button,
+.todo-start-button {
+    color: #061014;
+    background: var(--cyan);
+    border-color: var(--cyan-bright);
+
+    box-shadow:
+        0 0 12px rgba(82, 231, 255, 0.16);
+}
+
+.start-form button:hover,
+.todo-add-form button:hover,
+.todo-start-button:hover {
+    color: #061014;
+    background: var(--cyan-bright);
+}
+
+.quick-start {
+    border-top-color: rgba(255, 255, 255, 0.10);
+}
+
+.quick-start-button {
+    color: #e4e8ec;
+    background: rgba(255, 255, 255, 0.035);
+    border-color: rgba(255, 255, 255, 0.16);
+    box-shadow: none;
+}
+
+.quick-start-button:hover {
+    color: var(--cyan-bright);
+    background: rgba(82, 231, 255, 0.06);
+    border-color: rgba(82, 231, 255, 0.48);
+}
+
+.quick-start-button:disabled,
+.todo-start-button:disabled {
+    color: #626973;
+    background: rgba(255, 255, 255, 0.025);
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: none;
+}
+
+.todo-item,
+td {
+    border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+.todo-title,
+.activity-name,
+td {
+    color: #e5e8ec;
+}
+
+.todo-completed .todo-title {
+    color: #777e87;
+}
+
+.todo-check-form input[type="checkbox"] {
+    accent-color: var(--cyan);
+}
+
+/* ========================================
+   TIMELINE: 基本グレー、NOWと現在だけ水色
+======================================== */
+
+.timeline-hour-line {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.timeline-activity {
+    color: #eef0f2;
+    background: rgba(255, 255, 255, 0.055);
+
+    border-left-color: rgba(255, 255, 255, 0.24);
+
+    box-shadow: none;
+}
+
+.timeline-activity.is-current {
+    background: rgba(82, 231, 255, 0.08);
+    border-left-color: var(--cyan);
+
+    box-shadow:
+        inset 0 0 0 1px rgba(82, 231, 255, 0.08);
+}
+
+.timeline-now {
+    background: var(--cyan);
+
+    box-shadow:
+        0 0 8px rgba(82, 231, 255, 0.40);
+}
+
+.timeline-now span {
+    color: var(--cyan-bright);
+    background: rgba(7, 9, 12, 0.94);
+}
+
+.timeline-scroll {
+    scrollbar-color:
+        rgba(255, 255, 255, 0.22)
+        rgba(255, 255, 255, 0.03);
+}
+
+.timeline-scroll::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.timeline-scroll::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.18);
+}
+
+
+/* ========================================
+   TYPOGRAPHY
+   全体を一段だけ読みやすくする
+======================================== */
+
+.start-form label {
+    font-size: 12px;
+}
+
+input[type="text"] {
+    font-size: 13px;
+}
+
+.main-column button,
+.current-column button {
+    font-size: 12px;
+}
+
+.quick-start-label {
+    font-size: 11px;
+}
+
+.quick-start-button {
+    font-size: 12px !important;
+}
+
+.section-heading h2,
+.timeline-heading h2 {
+    font-size: 15px;
+}
+
+.section-heading span,
+.timeline-heading span {
+    font-size: 11px;
+}
+
+.todo-title {
+    font-size: 13px;
+}
+
+.todo-start-button {
+    font-size: 11px !important;
+}
+
+.timeline-hour-label {
+    font-size: 12px;
+}
+
+.timeline-activity-name {
+    font-size: 13px;
+}
+
+.timeline-activity-time {
+    font-size: 11px;
+}
+
+.timeline-now span {
+    font-size: 11px;
+}
+
 
 @media (max-width: 1000px) {
     .dashboard {
