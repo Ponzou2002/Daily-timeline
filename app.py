@@ -20,6 +20,7 @@ TEXTURE_OPTIONS = {"glass", "flat", "neumorphism"}
 MAIN_THEME_OPTIONS = {"dark", "light"}
 ACCENT_COLOR_OPTIONS = {
     "cyan",
+    "pink",
     "purple",
     "green",
     "orange",
