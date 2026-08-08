@@ -7,6 +7,19 @@
         { start: 19, scene: "night" },
     ];
 
+    const TRASH_ICON = `
+        <svg
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+            focusable="false"
+        >
+            <path
+                d="M9 3h6l1 2h4v2H4V5h4l1-2Zm-2 6h10l-.7 11H7.7L7 9Zm3 2v7h1.5v-7H10Zm2.5 0v7H14v-7h-1.5Z"
+                fill="currentColor"
+            />
+        </svg>
+    `;
+
     function getSceneForHour(hour) {
         if (hour < 4 || hour >= 19) {
             return "night";
@@ -275,7 +288,122 @@
         window.addEventListener("resize", updateLayout);
     }
 
+    function createDeleteForm(
+        action,
+        formClass,
+        buttonClass,
+        label
+    ) {
+        const form = document.createElement("form");
+        form.method = "post";
+        form.action = action;
+        form.className = formClass;
+
+        const button = document.createElement("button");
+        button.type = "submit";
+        button.className = buttonClass;
+        button.setAttribute("aria-label", label);
+        button.title = label;
+        button.innerHTML = TRASH_ICON;
+
+        form.appendChild(button);
+        return form;
+    }
+
+    function initializeTodoDeleteButtons() {
+        document
+            .querySelectorAll(".todo-item")
+            .forEach(item => {
+                if (item.querySelector(".todo-delete-form")) {
+                    return;
+                }
+
+                const completeForm =
+                    item.querySelector(".todo-check-form");
+                const match = completeForm?.action.match(
+                    /\/todo\/(\d+)\/complete\/?$/
+                );
+
+                if (!match) {
+                    return;
+                }
+
+                const todoId = match[1];
+                const form = createDeleteForm(
+                    `/todo/${todoId}/delete`,
+                    "todo-delete-form",
+                    "todo-delete-button",
+                    "TODOを削除"
+                );
+
+                item.appendChild(form);
+            });
+    }
+
+    async function initializeScheduleDeleteButtons() {
+        const planElements = Array.from(
+            document.querySelectorAll(".timeline-plan")
+        );
+
+        if (!planElements.length) {
+            return;
+        }
+
+        try {
+            const response = await fetch(
+                "/schedule/today.json",
+                {
+                    headers: {
+                        Accept: "application/json",
+                    },
+                    cache: "no-store",
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error(
+                    `Schedule metadata request failed: ${response.status}`
+                );
+            }
+
+            const schedules = await response.json();
+
+            planElements.forEach((plan, index) => {
+                if (plan.querySelector(".timeline-plan-delete-form")) {
+                    return;
+                }
+
+                const scheduleId = schedules[index]?.id;
+
+                if (!scheduleId) {
+                    return;
+                }
+
+                const form = createDeleteForm(
+                    `/schedule/${scheduleId}/delete`,
+                    "timeline-plan-delete-form",
+                    "timeline-plan-delete-button",
+                    "予定を削除"
+                );
+
+                plan.appendChild(form);
+            });
+        } catch (error) {
+            console.warn(
+                "Could not initialize schedule delete buttons:",
+                error
+            );
+        }
+    }
+
+    function initializeDeleteControls() {
+        initializeTodoDeleteButtons();
+        initializeScheduleDeleteButtons();
+    }
+
     function initialize() {
+        initializeDeleteControls();
+
         const widget = document.querySelector(
             ".current-time-widget"
         );
