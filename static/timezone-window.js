@@ -8,14 +8,23 @@
     ];
 
     const TRASH_ICON = `
-        <svg
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-            focusable="false"
-        >
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
             <path
                 d="M9 3h6l1 2h4v2H4V5h4l1-2Zm-2 6h10l-.7 11H7.7L7 9Zm3 2v7h1.5v-7H10Zm2.5 0v7H14v-7h-1.5Z"
                 fill="currentColor"
+            />
+        </svg>
+    `;
+
+    const EDIT_ICON = `
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path
+                d="M4 20h4l11-11-4-4L4 16v4Zm9.5-13.5 4 4M14.5 5.5l2-2a1.4 1.4 0 0 1 2 0l2 2a1.4 1.4 0 0 1 0 2l-2 2"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.6"
+                stroke-linecap="round"
+                stroke-linejoin="round"
             />
         </svg>
     `;
@@ -280,20 +289,12 @@
             layoutTimelineEntries(formatter);
         };
 
-        /* Let the existing DOMContentLoaded timeline positioning
-           finish first, then calculate shared horizontal lanes. */
         window.setTimeout(updateLayout, 0);
-
         window.setInterval(updateLayout, 30 * 1000);
         window.addEventListener("resize", updateLayout);
     }
 
-    function createDeleteForm(
-        action,
-        formClass,
-        buttonClass,
-        label
-    ) {
+    function createDeleteForm(action, formClass, buttonClass, label) {
         const form = document.createElement("form");
         form.method = "post";
         form.action = action;
@@ -310,48 +311,418 @@
         return form;
     }
 
-    function initializeTodoDeleteButtons() {
-        document
-            .querySelectorAll(".todo-item")
-            .forEach(item => {
-                if (item.querySelector(".todo-delete-form")) {
-                    return;
-                }
-
-                const completeForm =
-                    item.querySelector(".todo-check-form");
-                const match = completeForm?.action.match(
-                    /\/todo\/(\d+)\/complete\/?$/
-                );
-
-                if (!match) {
-                    return;
-                }
-
-                const todoId = match[1];
-                const form = createDeleteForm(
-                    `/todo/${todoId}/delete`,
-                    "todo-delete-form",
-                    "todo-delete-button",
-                    "TODOを削除"
-                );
-
-                item.appendChild(form);
-            });
-    }
-
-    async function initializeScheduleDeleteButtons() {
-        const planElements = Array.from(
-            document.querySelectorAll(".timeline-plan")
+    function createEditDialog() {
+        let dialog = document.getElementById(
+            "timeline-edit-dialog"
         );
 
-        if (!planElements.length) {
+        if (dialog) {
+            return dialog;
+        }
+
+        dialog = document.createElement("dialog");
+        dialog.id = "timeline-edit-dialog";
+        dialog.className =
+            "schedule-dialog timeline-edit-dialog";
+
+        dialog.innerHTML = `
+            <div class="schedule-dialog-shell">
+                <header class="schedule-dialog-header">
+                    <div class="schedule-dialog-title">
+                        <h2 id="timeline-edit-title">EDIT</h2>
+                        <span id="timeline-edit-subtitle"></span>
+                    </div>
+
+                    <button
+                        id="timeline-edit-close"
+                        class="schedule-dialog-close"
+                        type="button"
+                        aria-label="編集画面を閉じる"
+                    >×</button>
+                </header>
+
+                <form
+                    id="timeline-edit-form"
+                    method="post"
+                    class="schedule-form timeline-edit-form"
+                >
+                    <label class="schedule-field">
+                        <span>NAME</span>
+                        <input
+                            id="timeline-edit-name"
+                            type="text"
+                            name="name"
+                            autocomplete="off"
+                            required
+                        >
+                    </label>
+
+                    <div class="timeline-edit-range">
+                        <fieldset class="timeline-edit-period">
+                            <legend>START</legend>
+
+                            <span class="schedule-date-input-shell">
+                                <input
+                                    id="timeline-edit-start-date"
+                                    type="date"
+                                    name="start_date"
+                                    required
+                                >
+                            </span>
+
+                            <div class="schedule-clock-selects">
+                                <select
+                                    id="timeline-edit-start-hour"
+                                    name="start_hour"
+                                    aria-label="開始時"
+                                    required
+                                ></select>
+
+                                <span class="schedule-clock-separator">:</span>
+
+                                <select
+                                    id="timeline-edit-start-minute"
+                                    name="start_minute"
+                                    aria-label="開始分"
+                                    required
+                                ></select>
+                            </div>
+                        </fieldset>
+
+                        <fieldset
+                            id="timeline-edit-end-period"
+                            class="timeline-edit-period"
+                        >
+                            <legend>END</legend>
+
+                            <span class="schedule-date-input-shell">
+                                <input
+                                    id="timeline-edit-end-date"
+                                    type="date"
+                                    name="end_date"
+                                    required
+                                >
+                            </span>
+
+                            <div class="schedule-clock-selects">
+                                <select
+                                    id="timeline-edit-end-hour"
+                                    name="end_hour"
+                                    aria-label="終了時"
+                                    required
+                                ></select>
+
+                                <span class="schedule-clock-separator">:</span>
+
+                                <select
+                                    id="timeline-edit-end-minute"
+                                    name="end_minute"
+                                    aria-label="終了分"
+                                    required
+                                ></select>
+                            </div>
+                        </fieldset>
+                    </div>
+
+                    <div
+                        id="timeline-edit-current-note"
+                        class="timeline-edit-current-note"
+                        hidden
+                    >
+                        END <strong>NOW</strong>
+                        <span>進行中のActivityなので終了時刻は変更しません。</span>
+                    </div>
+
+                    <div class="schedule-dialog-actions">
+                        <button
+                            id="timeline-edit-cancel"
+                            class="schedule-dialog-cancel"
+                            type="button"
+                        >CANCEL</button>
+
+                        <button
+                            class="schedule-dialog-submit"
+                            type="submit"
+                        >SAVE</button>
+                    </div>
+                </form>
+            </div>
+        `;
+
+        document.body.appendChild(dialog);
+        return dialog;
+    }
+
+    function fillHourSelect(select, value) {
+        select.innerHTML = "";
+
+        for (let hour = 0; hour < 24; hour += 1) {
+            const option = document.createElement("option");
+            option.value = String(hour);
+            option.textContent =
+                String(hour).padStart(2, "0");
+            select.appendChild(option);
+        }
+
+        select.value = String(value);
+    }
+
+    function fillMinuteSelect(select, value) {
+        const minutes = [0, 10, 20, 30, 40, 50];
+        const numericValue = Number(value);
+
+        if (!minutes.includes(numericValue)) {
+            minutes.push(numericValue);
+            minutes.sort((left, right) => left - right);
+        }
+
+        select.innerHTML = "";
+
+        minutes.forEach(minute => {
+            const option = document.createElement("option");
+            option.value = String(minute);
+            option.textContent =
+                String(minute).padStart(2, "0");
+            select.appendChild(option);
+        });
+
+        select.value = String(numericValue);
+    }
+
+    function initializeEditDialog() {
+        const dialog = createEditDialog();
+        const form = document.getElementById("timeline-edit-form");
+        const title = document.getElementById("timeline-edit-title");
+        const subtitle = document.getElementById("timeline-edit-subtitle");
+        const closeButton = document.getElementById("timeline-edit-close");
+        const cancelButton = document.getElementById("timeline-edit-cancel");
+        const nameInput = document.getElementById("timeline-edit-name");
+        const startDate = document.getElementById("timeline-edit-start-date");
+        const startHour = document.getElementById("timeline-edit-start-hour");
+        const startMinute = document.getElementById("timeline-edit-start-minute");
+        const endPeriod = document.getElementById("timeline-edit-end-period");
+        const endDate = document.getElementById("timeline-edit-end-date");
+        const endHour = document.getElementById("timeline-edit-end-hour");
+        const endMinute = document.getElementById("timeline-edit-end-minute");
+        const currentNote = document.getElementById("timeline-edit-current-note");
+
+        function closeDialog() {
+            dialog.close();
+        }
+
+        closeButton.addEventListener("click", closeDialog);
+        cancelButton.addEventListener("click", closeDialog);
+
+        dialog.addEventListener("click", event => {
+            if (event.target === dialog) {
+                closeDialog();
+            }
+        });
+
+        function getDateTimeKey(dateInput, hourSelect, minuteSelect) {
+            if (
+                !dateInput.value
+                || hourSelect.value === ""
+                || minuteSelect.value === ""
+            ) {
+                return null;
+            }
+
+            return [
+                dateInput.value,
+                "T",
+                String(hourSelect.value).padStart(2, "0"),
+                ":",
+                String(minuteSelect.value).padStart(2, "0")
+            ].join("");
+        }
+
+        function validateTimes() {
+            endMinute.setCustomValidity("");
+
+            if (endPeriod.hidden) {
+                return;
+            }
+
+            const start = getDateTimeKey(
+                startDate,
+                startHour,
+                startMinute
+            );
+            const end = getDateTimeKey(
+                endDate,
+                endHour,
+                endMinute
+            );
+
+            if (start && end && end <= start) {
+                endMinute.setCustomValidity(
+                    "終了時刻は開始時刻より後にしてください。"
+                );
+            }
+        }
+
+        [
+            startDate,
+            startHour,
+            startMinute,
+            endDate,
+            endHour,
+            endMinute
+        ].forEach(control => {
+            control.addEventListener("change", validateTimes);
+        });
+
+        form.addEventListener("submit", event => {
+            validateTimes();
+
+            if (!form.reportValidity()) {
+                event.preventDefault();
+            }
+        });
+
+        function openEntry(entry, type) {
+            const isCurrent =
+                type === "activity" && entry.is_current;
+
+            form.action = type === "activity"
+                ? `/activity/${entry.id}/edit`
+                : `/schedule/${entry.id}/edit`;
+
+            title.textContent = type === "activity"
+                ? "EDIT ACTIVITY"
+                : "EDIT SCHEDULE";
+
+            subtitle.textContent = type === "activity"
+                ? "実績の名前・日時を変更"
+                : "手動予定の名前・日時を変更";
+
+            nameInput.value = entry.name;
+            startDate.value = entry.start_date;
+            fillHourSelect(startHour, entry.start_hour);
+            fillMinuteSelect(startMinute, entry.start_minute);
+
+            endPeriod.hidden = isCurrent;
+            currentNote.hidden = !isCurrent;
+
+            [endDate, endHour, endMinute].forEach(control => {
+                control.disabled = isCurrent;
+            });
+
+            if (!isCurrent) {
+                endDate.value = entry.end_date;
+                fillHourSelect(endHour, entry.end_hour);
+                fillMinuteSelect(endMinute, entry.end_minute);
+            }
+
+            endMinute.setCustomValidity("");
+            dialog.showModal();
+
+            window.setTimeout(() => {
+                nameInput.focus();
+                nameInput.select();
+            }, 0);
+        }
+
+        return openEntry;
+    }
+
+    function addEntryEditControl(element, entry, type, openEntry) {
+        if (!element || !entry) {
             return;
         }
 
+        element.dataset.entryType = type;
+        element.dataset.entryId = String(entry.id);
+        element.classList.add("is-editable-entry");
+
+        if (!element.querySelector(".timeline-entry-edit-button")) {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "timeline-entry-edit-button";
+            button.setAttribute(
+                "aria-label",
+                type === "activity"
+                    ? "Activityを編集"
+                    : "予定を編集"
+            );
+            button.title = "編集";
+            button.innerHTML = EDIT_ICON;
+
+            button.addEventListener("click", event => {
+                event.stopPropagation();
+                openEntry(entry, type);
+            });
+
+            element.appendChild(button);
+        }
+
+        if (!element.dataset.editClickAttached) {
+            element.addEventListener("click", event => {
+                if (event.target.closest("button, form, input, select")) {
+                    return;
+                }
+
+                openEntry(entry, type);
+            });
+
+            element.dataset.editClickAttached = "true";
+        }
+    }
+
+    function ensureScheduleDeleteControl(element, entry) {
+        if (
+            !element
+            || !entry
+            || element.querySelector(".timeline-plan-delete-form")
+        ) {
+            return;
+        }
+
+        const form = createDeleteForm(
+            `/schedule/${entry.id}/delete`,
+            "timeline-plan-delete-form",
+            "timeline-plan-delete-button",
+            "予定を削除"
+        );
+
+        element.appendChild(form);
+    }
+
+    function ensureTodoDeleteControls(todoEntries) {
+        const todoItems = Array.from(
+            document.querySelectorAll(".todo-item")
+        );
+
+        todoItems.forEach((element, index) => {
+            const entry = todoEntries[index];
+
+            if (
+                !entry
+                || element.querySelector(".todo-delete-form")
+            ) {
+                return;
+            }
+
+            const form = createDeleteForm(
+                `/todo/${entry.id}/delete`,
+                "todo-delete-form",
+                "todo-delete-button",
+                "TODOを削除"
+            );
+
+            element.appendChild(form);
+        });
+    }
+
+    async function initializeTimelineEntryEditing() {
+        const openEntry = initializeEditDialog();
+
+        let response;
+
         try {
-            const response = await fetch(
-                "/schedule/today.json",
+            response = await fetch(
+                "/timeline/edit-data.json",
                 {
                     headers: {
                         Accept: "application/json",
@@ -359,56 +730,62 @@
                     cache: "no-store",
                 }
             );
-
-            if (!response.ok) {
-                throw new Error(
-                    `Schedule metadata request failed: ${response.status}`
-                );
-            }
-
-            const schedules = await response.json();
-
-            planElements.forEach((plan, index) => {
-                if (plan.querySelector(".timeline-plan-delete-form")) {
-                    return;
-                }
-
-                const scheduleId = schedules[index]?.id;
-
-                if (!scheduleId) {
-                    return;
-                }
-
-                const form = createDeleteForm(
-                    `/schedule/${scheduleId}/delete`,
-                    "timeline-plan-delete-form",
-                    "timeline-plan-delete-button",
-                    "予定を削除"
-                );
-
-                plan.appendChild(form);
-            });
         } catch (error) {
             console.warn(
-                "Could not initialize schedule delete buttons:",
+                "Could not load timeline edit data:",
                 error
             );
+            return;
         }
-    }
 
-    function initializeDeleteControls() {
-        initializeTodoDeleteButtons();
-        initializeScheduleDeleteButtons();
+        if (!response.ok) {
+            console.warn(
+                "Could not load timeline edit data:",
+                response.status
+            );
+            return;
+        }
+
+        const data = await response.json();
+
+        const activityElements = Array.from(
+            document.querySelectorAll(".timeline-activity")
+        );
+        const scheduleElements = Array.from(
+            document.querySelectorAll(".timeline-plan")
+        );
+
+        activityElements.forEach((element, index) => {
+            addEntryEditControl(
+                element,
+                data.activities[index],
+                "activity",
+                openEntry
+            );
+        });
+
+        scheduleElements.forEach((element, index) => {
+            const entry = data.schedules[index];
+
+            addEntryEditControl(
+                element,
+                entry,
+                "schedule",
+                openEntry
+            );
+            ensureScheduleDeleteControl(element, entry);
+        });
+
+        ensureTodoDeleteControls(data.todos || []);
     }
 
     function initialize() {
-        initializeDeleteControls();
-
         const widget = document.querySelector(
             ".current-time-widget"
         );
 
         if (!widget) {
+            initializeTimelineEntryEditing();
             return;
         }
 
@@ -416,6 +793,7 @@
         const timeZone = zoneElement?.textContent.trim();
 
         if (!timeZone) {
+            initializeTimelineEntryEditing();
             return;
         }
 
@@ -437,11 +815,13 @@
                 "Could not initialize time-zone UI:",
                 error
             );
+            initializeTimelineEntryEditing();
             return;
         }
 
         initializeTimeZoneWindow(widget, formatter);
         initializeTimelineOverlapLayout(formatter);
+        initializeTimelineEntryEditing();
     }
 
     if (document.readyState === "loading") {
