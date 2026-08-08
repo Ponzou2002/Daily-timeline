@@ -212,11 +212,13 @@ def build_timeline_items(
 
         if is_current:
             ended_at = now
+            original_ended_at = None
         else:
             ended_at = convert_to_timezone(
                 row["ended_at"],
                 timezone,
             )
+            original_ended_at = ended_at
 
         visible_start = max(started_at, day_start)
         visible_end = min(ended_at, day_end)
@@ -248,6 +250,24 @@ def build_timeline_items(
                     else visible_end.strftime("%H:%M")
                 ),
                 "is_current": is_current,
+                "edit_start_date": started_at.date().isoformat(),
+                "edit_start_hour": started_at.hour,
+                "edit_start_minute": started_at.minute,
+                "edit_end_date": (
+                    None
+                    if original_ended_at is None
+                    else original_ended_at.date().isoformat()
+                ),
+                "edit_end_hour": (
+                    None
+                    if original_ended_at is None
+                    else original_ended_at.hour
+                ),
+                "edit_end_minute": (
+                    None
+                    if original_ended_at is None
+                    else original_ended_at.minute
+                ),
             }
         )
 
@@ -325,6 +345,12 @@ def build_schedule_items(
                 "end_minute": end_minutes,
                 "start_display": visible_start.strftime("%H:%M"),
                 "end_display": visible_end.strftime("%H:%M"),
+                "edit_start_date": planned_start.date().isoformat(),
+                "edit_start_hour": planned_start.hour,
+                "edit_start_minute": planned_start.minute,
+                "edit_end_date": planned_end.date().isoformat(),
+                "edit_end_hour": planned_end.hour,
+                "edit_end_minute": planned_end.minute,
             }
         )
 
@@ -363,9 +389,7 @@ def build_schedule_items(
     return items
 
 
-def get_today_schedule_items():
-    settings = get_current_settings()
-    timezone = get_configured_timezone(settings)
+def get_day_bounds(timezone):
     now = datetime.now(timezone)
     day_start = now.replace(
         hour=0,
@@ -374,6 +398,13 @@ def get_today_schedule_items():
         microsecond=0,
     )
     day_end = day_start + timedelta(days=1)
+    return now, day_start, day_end
+
+
+def get_today_schedule_items():
+    settings = get_current_settings()
+    timezone = get_configured_timezone(settings)
+    _, day_start, day_end = get_day_bounds(timezone)
 
     with get_db() as connection:
         rows = connection.execute(
@@ -398,21 +429,64 @@ def get_today_schedule_items():
     )
 
 
+def parse_edit_datetime(
+    date_value,
+    hour_value,
+    minute_value,
+    timezone,
+):
+    try:
+        target_date = datetime.strptime(
+            date_value,
+            "%Y-%m-%d",
+        ).date()
+        hour = int(hour_value)
+        minute = int(minute_value)
+    except (TypeError, ValueError):
+        return None
+
+    if hour not in range(24) or minute not in range(60):
+        return None
+
+    return datetime(
+        target_date.year,
+        target_date.month,
+        target_date.day,
+        hour,
+        minute,
+        tzinfo=timezone,
+    )
+
+
+def preserve_seconds_if_same_minute(
+    submitted,
+    original,
+):
+    if submitted is None or original is None:
+        return submitted
+
+    if (
+        submitted.year == original.year
+        and submitted.month == original.month
+        and submitted.day == original.day
+        and submitted.hour == original.hour
+        and submitted.minute == original.minute
+    ):
+        return submitted.replace(
+            second=original.second,
+            microsecond=original.microsecond,
+        )
+
+    return submitted
+
+
 @app.get("/")
 def index():
     with get_db() as connection:
         settings = load_settings(connection)
         timezone = get_configured_timezone(settings)
-        now = datetime.now(timezone)
+        now, day_start, day_end = get_day_bounds(timezone)
         today = now.date().isoformat()
-
-        day_start = now.replace(
-            hour=0,
-            minute=0,
-            second=0,
-            microsecond=0,
-        )
-        day_end = day_start + timedelta(days=1)
 
         current_activity_row = connection.execute(
             """
@@ -537,6 +611,109 @@ def index():
     )
 
 
+@app.get("/timeline/edit-data.json")
+def get_timeline_edit_data():
+    settings = get_current_settings()
+    timezone = get_configured_timezone(settings)
+    now, day_start, day_end = get_day_bounds(timezone)
+    today = now.date().isoformat()
+
+    with get_db() as connection:
+        activity_rows = connection.execute(
+            """
+            SELECT id, name, started_at, ended_at
+            FROM activities
+            WHERE datetime(started_at) < datetime(?)
+              AND (
+                  ended_at IS NULL
+                  OR datetime(ended_at) > datetime(?)
+              )
+            ORDER BY datetime(started_at) ASC
+            """,
+            (
+                day_end.isoformat(timespec="seconds"),
+                day_start.isoformat(timespec="seconds"),
+            ),
+        ).fetchall()
+
+        schedule_rows = connection.execute(
+            """
+            SELECT id, name, planned_start, planned_end, created_at
+            FROM plans
+            WHERE datetime(planned_start) < datetime(?)
+              AND datetime(planned_end) > datetime(?)
+            ORDER BY datetime(planned_start) ASC
+            """,
+            (
+                day_end.isoformat(timespec="seconds"),
+                day_start.isoformat(timespec="seconds"),
+            ),
+        ).fetchall()
+
+        todo_rows = connection.execute(
+            """
+            SELECT id
+            FROM todos
+            WHERE todo_date = ?
+            ORDER BY
+                CASE WHEN completed_at IS NULL THEN 0 ELSE 1 END,
+                created_at ASC
+            """,
+            (today,),
+        ).fetchall()
+
+    activities = build_timeline_items(
+        activity_rows,
+        day_start,
+        day_end,
+        now,
+        timezone,
+    )
+    schedules = build_schedule_items(
+        schedule_rows,
+        day_start,
+        day_end,
+        timezone,
+    )
+
+    return jsonify(
+        {
+            "activities": [
+                {
+                    "id": item["id"],
+                    "name": item["name"],
+                    "is_current": item["is_current"],
+                    "start_date": item["edit_start_date"],
+                    "start_hour": item["edit_start_hour"],
+                    "start_minute": item["edit_start_minute"],
+                    "end_date": item["edit_end_date"],
+                    "end_hour": item["edit_end_hour"],
+                    "end_minute": item["edit_end_minute"],
+                }
+                for item in activities
+            ],
+            "schedules": [
+                {
+                    "id": item["id"],
+                    "name": item["name"],
+                    "is_current": False,
+                    "start_date": item["edit_start_date"],
+                    "start_hour": item["edit_start_hour"],
+                    "start_minute": item["edit_start_minute"],
+                    "end_date": item["edit_end_date"],
+                    "end_hour": item["edit_end_hour"],
+                    "end_minute": item["edit_end_minute"],
+                }
+                for item in schedules
+            ],
+            "todos": [
+                {"id": row["id"]}
+                for row in todo_rows
+            ],
+        }
+    )
+
+
 @app.post("/settings")
 def update_settings():
     texture = request.form.get("texture", "")
@@ -599,6 +776,106 @@ def start_activity():
             """,
             (task_name, now),
         )
+
+    return redirect(url_for("index"))
+
+
+@app.post("/activity/<int:activity_id>/edit")
+def edit_activity(activity_id):
+    name = request.form.get("name", "").strip()
+
+    if not name:
+        return redirect(url_for("index"))
+
+    settings = get_current_settings()
+    timezone = get_configured_timezone(settings)
+
+    with get_db() as connection:
+        row = connection.execute(
+            """
+            SELECT id, name, started_at, ended_at
+            FROM activities
+            WHERE id = ?
+            """,
+            (activity_id,),
+        ).fetchone()
+
+        if row is None:
+            return redirect(url_for("index"))
+
+        original_start = convert_to_timezone(
+            row["started_at"],
+            timezone,
+        )
+
+        start = parse_edit_datetime(
+            request.form.get("start_date"),
+            request.form.get("start_hour"),
+            request.form.get("start_minute"),
+            timezone,
+        )
+
+        if start is None:
+            return redirect(url_for("index"))
+
+        start = preserve_seconds_if_same_minute(
+            start,
+            original_start,
+        )
+
+        if row["ended_at"] is None:
+            if start > datetime.now(timezone):
+                return redirect(url_for("index"))
+
+            connection.execute(
+                """
+                UPDATE activities
+                SET name = ?, started_at = ?
+                WHERE id = ?
+                """,
+                (
+                    name,
+                    start.isoformat(timespec="seconds"),
+                    activity_id,
+                ),
+            )
+        else:
+            original_end = convert_to_timezone(
+                row["ended_at"],
+                timezone,
+            )
+
+            end = parse_edit_datetime(
+                request.form.get("end_date"),
+                request.form.get("end_hour"),
+                request.form.get("end_minute"),
+                timezone,
+            )
+
+            if end is None:
+                return redirect(url_for("index"))
+
+            end = preserve_seconds_if_same_minute(
+                end,
+                original_end,
+            )
+
+            if end <= start:
+                return redirect(url_for("index"))
+
+            connection.execute(
+                """
+                UPDATE activities
+                SET name = ?, started_at = ?, ended_at = ?
+                WHERE id = ?
+                """,
+                (
+                    name,
+                    start.isoformat(timespec="seconds"),
+                    end.isoformat(timespec="seconds"),
+                    activity_id,
+                ),
+            )
 
     return redirect(url_for("index"))
 
@@ -685,6 +962,50 @@ def add_schedule():
                 planned_start.isoformat(timespec="seconds"),
                 planned_end.isoformat(timespec="seconds"),
                 now.isoformat(timespec="seconds"),
+            ),
+        )
+
+    return redirect(url_for("index"))
+
+
+@app.post("/schedule/<int:schedule_id>/edit")
+def edit_schedule(schedule_id):
+    name = request.form.get("name", "").strip()
+
+    if not name:
+        return redirect(url_for("index"))
+
+    settings = get_current_settings()
+    timezone = get_configured_timezone(settings)
+
+    start = parse_edit_datetime(
+        request.form.get("start_date"),
+        request.form.get("start_hour"),
+        request.form.get("start_minute"),
+        timezone,
+    )
+    end = parse_edit_datetime(
+        request.form.get("end_date"),
+        request.form.get("end_hour"),
+        request.form.get("end_minute"),
+        timezone,
+    )
+
+    if start is None or end is None or end <= start:
+        return redirect(url_for("index"))
+
+    with get_db() as connection:
+        connection.execute(
+            """
+            UPDATE plans
+            SET name = ?, planned_start = ?, planned_end = ?
+            WHERE id = ?
+            """,
+            (
+                name,
+                start.isoformat(timespec="seconds"),
+                end.isoformat(timespec="seconds"),
+                schedule_id,
             ),
         )
 
