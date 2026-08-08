@@ -23,9 +23,262 @@
         return scene;
     }
 
-    function initializeTimeZoneWindow() {
-        const widget =
-            document.querySelector(".current-time-widget");
+    function getTimeParts(formatter) {
+        const values = {};
+
+        formatter
+            .formatToParts(new Date())
+            .forEach(part => {
+                if (
+                    part.type === "hour"
+                    || part.type === "minute"
+                    || part.type === "second"
+                ) {
+                    values[part.type] = Number(part.value);
+                }
+            });
+
+        return values;
+    }
+
+    function initializeTimeZoneWindow(widget, formatter) {
+        function updateScene() {
+            const time = getTimeParts(formatter);
+
+            widget.dataset.timeScene =
+                getSceneForHour(time.hour);
+        }
+
+        updateScene();
+        window.setInterval(updateScene, 60 * 1000);
+    }
+
+    function readPercentVariable(element, variableName) {
+        const value = element.style
+            .getPropertyValue(variableName)
+            .trim();
+
+        const number = Number.parseFloat(value);
+
+        return Number.isFinite(number) ? number : 0;
+    }
+
+    function moveActivitiesIntoSharedLayer(layer) {
+        const timelineBody = layer.parentElement;
+
+        if (!timelineBody) {
+            return;
+        }
+
+        const activities = Array.from(
+            timelineBody.children
+        ).filter(element =>
+            element.classList.contains("timeline-activity")
+        );
+
+        activities.forEach(activity => {
+            layer.appendChild(activity);
+        });
+    }
+
+    function getTimelineEntryRange(
+        element,
+        currentMinute
+    ) {
+        const isActivity =
+            element.classList.contains("timeline-activity");
+
+        let startPercent;
+        let heightPercent;
+
+        if (isActivity) {
+            startPercent = Number(
+                element.dataset.startPercent
+            );
+            heightPercent = Number(
+                element.dataset.heightPercent
+            );
+
+            if (
+                element.id === "timeline-current-activity"
+                && Number.isFinite(currentMinute)
+            ) {
+                const startMinute = Number(
+                    element.dataset.startMinute
+                );
+
+                heightPercent = (
+                    Math.max(0, currentMinute - startMinute)
+                    / 1440
+                    * 100
+                );
+            }
+        } else {
+            startPercent = readPercentVariable(
+                element,
+                "--schedule-top"
+            );
+            heightPercent = readPercentVariable(
+                element,
+                "--schedule-height"
+            );
+        }
+
+        if (
+            !Number.isFinite(startPercent)
+            || !Number.isFinite(heightPercent)
+        ) {
+            return null;
+        }
+
+        return {
+            element,
+            start: startPercent,
+            end: startPercent + Math.max(0, heightPercent),
+            priority: isActivity ? 0 : 1,
+        };
+    }
+
+    function assignGroupLanes(group) {
+        const laneEnds = [];
+
+        const orderedEntries = [...group].sort(
+            (left, right) =>
+                left.priority - right.priority
+                || left.start - right.start
+                || left.end - right.end
+        );
+
+        orderedEntries.forEach(entry => {
+            let laneIndex = laneEnds.findIndex(
+                laneEnd => entry.start >= laneEnd
+            );
+
+            if (laneIndex === -1) {
+                laneIndex = laneEnds.length;
+                laneEnds.push(entry.end);
+            } else {
+                laneEnds[laneIndex] = entry.end;
+            }
+
+            entry.laneIndex = laneIndex;
+        });
+
+        const laneCount = Math.max(1, laneEnds.length);
+
+        group.forEach(entry => {
+            const left =
+                entry.laneIndex / laneCount * 100;
+            const width = 100 / laneCount;
+
+            entry.element.style.setProperty(
+                "--schedule-left",
+                `${left}%`
+            );
+            entry.element.style.setProperty(
+                "--schedule-width",
+                `${width}%`
+            );
+
+            entry.element.dataset.lane =
+                String(entry.laneIndex);
+            entry.element.dataset.laneCount =
+                String(laneCount);
+        });
+    }
+
+    function layoutTimelineEntries(formatter) {
+        const layer = document.querySelector(
+            ".timeline-plan-layer"
+        );
+
+        if (!layer) {
+            return;
+        }
+
+        const time = getTimeParts(formatter);
+        const currentMinute =
+            time.hour * 60
+            + time.minute
+            + time.second / 60;
+
+        const entries = Array.from(
+            layer.querySelectorAll(
+                ".timeline-activity, .timeline-plan"
+            )
+        )
+            .map(element =>
+                getTimelineEntryRange(
+                    element,
+                    currentMinute
+                )
+            )
+            .filter(Boolean)
+            .sort(
+                (left, right) =>
+                    left.start - right.start
+                    || left.end - right.end
+            );
+
+        if (!entries.length) {
+            return;
+        }
+
+        const groups = [];
+        let currentGroup = [];
+        let currentGroupEnd = null;
+
+        entries.forEach(entry => {
+            if (
+                currentGroup.length
+                && entry.start >= currentGroupEnd
+            ) {
+                groups.push(currentGroup);
+                currentGroup = [];
+                currentGroupEnd = null;
+            }
+
+            currentGroup.push(entry);
+
+            currentGroupEnd = currentGroupEnd === null
+                ? entry.end
+                : Math.max(currentGroupEnd, entry.end);
+        });
+
+        if (currentGroup.length) {
+            groups.push(currentGroup);
+        }
+
+        groups.forEach(assignGroupLanes);
+    }
+
+    function initializeTimelineOverlapLayout(formatter) {
+        const layer = document.querySelector(
+            ".timeline-plan-layer"
+        );
+
+        if (!layer) {
+            return;
+        }
+
+        moveActivitiesIntoSharedLayer(layer);
+
+        const updateLayout = () => {
+            layoutTimelineEntries(formatter);
+        };
+
+        /* Let the existing DOMContentLoaded timeline positioning
+           finish first, then calculate shared horizontal lanes. */
+        window.setTimeout(updateLayout, 0);
+
+        window.setInterval(updateLayout, 30 * 1000);
+        window.addEventListener("resize", updateLayout);
+    }
+
+    function initialize() {
+        const widget = document.querySelector(
+            ".current-time-widget"
+        );
 
         if (!widget) {
             return;
@@ -46,36 +299,29 @@
                 {
                     timeZone,
                     hour: "2-digit",
+                    minute: "2-digit",
+                    second: "2-digit",
                     hourCycle: "h23",
                 }
             );
         } catch (error) {
             console.warn(
-                "Could not initialize time-zone window:",
+                "Could not initialize time-zone UI:",
                 error
             );
             return;
         }
 
-        function updateScene() {
-            const hour = Number(
-                formatter.format(new Date())
-            );
-
-            widget.dataset.timeScene =
-                getSceneForHour(hour);
-        }
-
-        updateScene();
-        window.setInterval(updateScene, 60 * 1000);
+        initializeTimeZoneWindow(widget, formatter);
+        initializeTimelineOverlapLayout(formatter);
     }
 
     if (document.readyState === "loading") {
         document.addEventListener(
             "DOMContentLoaded",
-            initializeTimeZoneWindow
+            initialize
         );
     } else {
-        initializeTimeZoneWindow();
+        initialize();
     }
 })();
