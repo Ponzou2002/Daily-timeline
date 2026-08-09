@@ -29,6 +29,8 @@
         </svg>
     `;
 
+    const TIMELINE_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+
     function getSceneForHour(hour) {
         if (hour < 4 || hour >= 19) {
             return "night";
@@ -61,6 +63,192 @@
             });
 
         return values;
+    }
+
+    function getConfiguredDateKey(timeZone) {
+        const formatter = new Intl.DateTimeFormat(
+            "en-CA",
+            {
+                timeZone,
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+            }
+        );
+        const values = {};
+
+        formatter
+            .formatToParts(new Date())
+            .forEach(part => {
+                if (
+                    part.type === "year"
+                    || part.type === "month"
+                    || part.type === "day"
+                ) {
+                    values[part.type] = part.value;
+                }
+            });
+
+        return `${values.year}-${values.month}-${values.day}`;
+    }
+
+    function getRequestedTimelineDate() {
+        const value = new URLSearchParams(
+            window.location.search
+        ).get("date");
+
+        if (!value || !TIMELINE_DATE_PATTERN.test(value)) {
+            return null;
+        }
+
+        return value;
+    }
+
+    function shiftDate(dateKey, amount) {
+        const date = new Date(`${dateKey}T12:00:00Z`);
+        date.setUTCDate(date.getUTCDate() + amount);
+        return date.toISOString().slice(0, 10);
+    }
+
+    function withTimelineDate(path) {
+        const dateKey = getRequestedTimelineDate();
+
+        if (!dateKey) {
+            return path;
+        }
+
+        const separator = path.includes("?") ? "&" : "?";
+        return `${path}${separator}date=${encodeURIComponent(dateKey)}`;
+    }
+
+    function ensureTimelineDateStylesheet() {
+        if (document.getElementById("timeline-date-stylesheet")) {
+            return;
+        }
+
+        const link = document.createElement("link");
+        link.id = "timeline-date-stylesheet";
+        link.rel = "stylesheet";
+        link.href = "/static/timeline-date.css";
+        document.head.appendChild(link);
+    }
+
+    function initializeTimelineDateNavigation(timeZone) {
+        ensureTimelineDateStylesheet();
+
+        const today = getConfiguredDateKey(timeZone);
+        const requestedDate = getRequestedTimelineDate();
+        const selectedDate = requestedDate || today;
+        const isToday = selectedDate === today;
+
+        const heading = document.querySelector(".timeline-heading");
+        const headingCopy = document.querySelector(
+            ".timeline-heading-copy"
+        );
+        const addButton = document.getElementById(
+            "add-schedule-open"
+        );
+
+        if (headingCopy) {
+            const title = headingCopy.querySelector("h2");
+            const subtitle = headingCopy.querySelector("span");
+
+            if (title) {
+                title.textContent = isToday
+                    ? "TODAY TIMELINE"
+                    : "DAY TIMELINE";
+            }
+
+            if (subtitle) {
+                subtitle.textContent = isToday
+                    ? "今日の記録"
+                    : selectedDate;
+            }
+        }
+
+        if (
+            heading
+            && addButton
+            && !document.querySelector(".timeline-date-nav")
+        ) {
+            const nav = document.createElement("nav");
+            nav.className = "timeline-date-nav";
+            nav.setAttribute("aria-label", "Timeline date navigation");
+
+            const previous = document.createElement("a");
+            previous.className = "timeline-date-step";
+            previous.href = `/?date=${shiftDate(selectedDate, -1)}`;
+            previous.textContent = "‹";
+            previous.setAttribute("aria-label", "前の日");
+            previous.title = "前の日";
+
+            const label = document.createElement("span");
+            label.className = "timeline-date-label";
+            label.textContent = selectedDate;
+
+            const next = document.createElement("a");
+            next.className = "timeline-date-step";
+            next.href = `/?date=${shiftDate(selectedDate, 1)}`;
+            next.textContent = "›";
+            next.setAttribute("aria-label", "次の日");
+            next.title = "次の日";
+
+            const todayLink = document.createElement("a");
+            todayLink.className =
+                `timeline-date-today${isToday ? " is-active" : ""}`;
+            todayLink.href = "/";
+            todayLink.textContent = "TODAY";
+
+            nav.append(
+                previous,
+                label,
+                next,
+                todayLink
+            );
+            heading.insertBefore(nav, addButton);
+        }
+
+        const scheduleForm = document.getElementById(
+            "schedule-form"
+        );
+        const scheduleDate = document.getElementById(
+            "schedule-date"
+        );
+
+        if (scheduleForm) {
+            scheduleForm.action = withTimelineDate(
+                "/schedule/add"
+            );
+        }
+
+        if (scheduleDate) {
+            scheduleDate.value = selectedDate;
+        }
+
+        if (!isToday) {
+            const nowLine = document.getElementById("timeline-now");
+            nowLine?.remove();
+
+            const currentActivity = document.getElementById(
+                "timeline-current-activity"
+            );
+
+            if (currentActivity) {
+                currentActivity.removeAttribute("id");
+                currentActivity.classList.remove("is-current");
+
+                if (selectedDate < today) {
+                    const timeLabel = currentActivity.querySelector(
+                        ".timeline-activity-time"
+                    );
+
+                    if (timeLabel) {
+                        timeLabel.textContent = timeLabel.textContent
+                            .replace(/\s*–\s*NOW\s*$/, " – 00:00");
+                    }
+                }
+            }
+        }
     }
 
     function initializeTimeZoneWindow(widget, formatter) {
@@ -586,8 +774,8 @@
                 type === "activity" && entry.is_current;
 
             form.action = type === "activity"
-                ? `/activity/${entry.id}/edit`
-                : `/schedule/${entry.id}/edit`;
+                ? withTimelineDate(`/activity/${entry.id}/edit`)
+                : withTimelineDate(`/schedule/${entry.id}/edit`);
 
             title.textContent = type === "activity"
                 ? "EDIT ACTIVITY"
@@ -680,7 +868,7 @@
         }
 
         const form = createDeleteForm(
-            `/schedule/${entry.id}/delete`,
+            withTimelineDate(`/schedule/${entry.id}/delete`),
             "timeline-plan-delete-form",
             "timeline-plan-delete-button",
             "予定を削除"
@@ -722,7 +910,7 @@
 
         try {
             response = await fetch(
-                "/timeline/edit-data.json",
+                withTimelineDate("/timeline/edit-data.json"),
                 {
                     headers: {
                         Accept: "application/json",
@@ -819,6 +1007,7 @@
             return;
         }
 
+        initializeTimelineDateNavigation(timeZone);
         initializeTimeZoneWindow(widget, formatter);
         initializeTimelineOverlapLayout(formatter);
         initializeTimelineEntryEditing();
