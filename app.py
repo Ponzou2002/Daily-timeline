@@ -389,16 +389,45 @@ def build_schedule_items(
     return items
 
 
-def get_day_bounds(timezone):
+def parse_timeline_date(value, fallback_date):
+    if not value:
+        return fallback_date
+
+    try:
+        return datetime.strptime(value, "%Y-%m-%d").date()
+    except ValueError:
+        return fallback_date
+
+
+def get_day_bounds(timezone, target_date=None):
     now = datetime.now(timezone)
-    day_start = now.replace(
-        hour=0,
-        minute=0,
-        second=0,
-        microsecond=0,
+
+    if target_date is None:
+        target_date = now.date()
+
+    day_start = datetime(
+        target_date.year,
+        target_date.month,
+        target_date.day,
+        tzinfo=timezone,
     )
     day_end = day_start + timedelta(days=1)
     return now, day_start, day_end
+
+
+def redirect_to_timeline_date():
+    date_value = request.args.get("date", "").strip()
+
+    if date_value:
+        try:
+            datetime.strptime(date_value, "%Y-%m-%d")
+        except ValueError:
+            date_value = ""
+
+    if date_value:
+        return redirect(url_for("index", date=date_value))
+
+    return redirect(url_for("index"))
 
 
 def get_today_schedule_items():
@@ -485,7 +514,15 @@ def index():
     with get_db() as connection:
         settings = load_settings(connection)
         timezone = get_configured_timezone(settings)
-        now, day_start, day_end = get_day_bounds(timezone)
+        current_now = datetime.now(timezone)
+        selected_date = parse_timeline_date(
+            request.args.get("date"),
+            current_now.date(),
+        )
+        now, day_start, day_end = get_day_bounds(
+            timezone,
+            selected_date,
+        )
         today = now.date().isoformat()
 
         current_activity_row = connection.execute(
@@ -615,7 +652,15 @@ def index():
 def get_timeline_edit_data():
     settings = get_current_settings()
     timezone = get_configured_timezone(settings)
-    now, day_start, day_end = get_day_bounds(timezone)
+    current_now = datetime.now(timezone)
+    selected_date = parse_timeline_date(
+        request.args.get("date"),
+        current_now.date(),
+    )
+    now, day_start, day_end = get_day_bounds(
+        timezone,
+        selected_date,
+    )
     today = now.date().isoformat()
 
     with get_db() as connection:
@@ -877,7 +922,7 @@ def edit_activity(activity_id):
                 ),
             )
 
-    return redirect(url_for("index"))
+    return redirect_to_timeline_date()
 
 
 @app.post("/schedule/add")
@@ -965,7 +1010,7 @@ def add_schedule():
             ),
         )
 
-    return redirect(url_for("index"))
+    return redirect_to_timeline_date()
 
 
 @app.post("/schedule/<int:schedule_id>/edit")
@@ -1009,7 +1054,7 @@ def edit_schedule(schedule_id):
             ),
         )
 
-    return redirect(url_for("index"))
+    return redirect_to_timeline_date()
 
 
 @app.get("/schedule/today.json")
@@ -1030,7 +1075,7 @@ def delete_schedule(schedule_id):
             (schedule_id,),
         )
 
-    return redirect(url_for("index"))
+    return redirect_to_timeline_date()
 
 
 @app.post("/todo/add")
