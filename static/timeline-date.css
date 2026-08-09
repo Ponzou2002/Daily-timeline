@@ -1,0 +1,119 @@
+/* ========================================
+   TIMELINE DATE NAVIGATION
+======================================== */
+
+.timeline-heading {
+    flex-wrap: wrap;
+}
+
+.timeline-date-nav {
+    margin-left: auto;
+
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    font-family:
+        "Share Tech Mono",
+        Consolas,
+        "Courier New",
+        monospace;
+}
+
+.timeline-date-step,
+.timeline-date-today {
+    min-width: 30px;
+    height: 30px;
+    padding: 0 8px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    color: var(--theme-muted);
+    background: transparent;
+    border: 1px solid var(--theme-border-strong);
+    border-radius: 7px;
+
+    text-decoration: none;
+    box-sizing: border-box;
+
+    transition:
+        color 120ms ease,
+        background 120ms ease,
+        border-color 120ms ease;
+}
+
+.timeline-date-step {
+    width: 30px;
+    padding: 0;
+
+    font-size: 18px;
+    line-height: 1;
+}
+
+.timeline-date-label {
+    min-width: 94px;
+
+    color: var(--theme-text-soft);
+
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.timeline-date-today {
+    min-width: auto;
+
+    font-size: 9px;
+    letter-spacing: 0.08em;
+}
+
+.timeline-date-step:hover,
+.timeline-date-today:hover,
+.timeline-date-today.is-active {
+    color: var(--accent-foreground);
+    background: var(--accent-06);
+    border-color: var(--accent-40);
+}
+
+.timeline-date-today.is-active {
+    cursor: default;
+}
+
+html[data-texture="neumorphism"] .timeline-date-step,
+html[data-texture="neumorphism"] .timeline-date-today {
+    background: var(--theme-background);
+    border: none;
+
+    box-shadow:
+        -2px -2px 5px var(--neu-highlight),
+        2px 2px 5px var(--neu-shadow);
+}
+
+html[data-texture="neumorphism"] .timeline-date-step:active,
+html[data-texture="neumorphism"] .timeline-date-today:active {
+    box-shadow:
+        inset 2px 2px 5px var(--neu-shadow),
+        inset -2px -2px 5px var(--neu-highlight);
+}
+
+@media (max-width: 900px) {
+    .timeline-date-nav {
+        order: 3;
+        width: 100%;
+        margin-left: 0;
+        justify-content: flex-end;
+    }
+}
+
+@media (max-width: 700px) {
+    .timeline-date-nav {
+        justify-content: space-between;
+    }
+
+    .timeline-date-label {
+        flex: 1;
+    }
+}
