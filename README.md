@@ -121,3 +121,11 @@ python -m pip install -r requirements.txt
 - インターネットへ直接公開する用途は想定していません。
 - 外部公開する場合は、HTTPS・認証・ファイアウォール・リバースプロキシ等を別途構成してください。
 - Flask標準の開発サーバーは、信頼できるローカル環境やLAN内での利用を想定しています。
+
+## License
+
+This project is licensed under the PolyForm Noncommercial License 1.0.0.
+
+Personal and other noncommercial use, modification, and redistribution are permitted under the license. Commercial use is not permitted under this license and requires separate permission from the author.
+
+See the `LICENSE` file for details.
