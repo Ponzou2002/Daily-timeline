@@ -32,6 +32,85 @@
     const TIMELINE_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
     const TIMELINE_OVERLAP_EPSILON = 1e-7;
 
+    function normalizeInterfaceCopy() {
+        [
+            ".menu-link > span + span",
+            ".settings-heading > span",
+            ".section-heading > span",
+            ".timeline-heading-copy > span",
+            ".schedule-dialog-title > span",
+        ].forEach(selector => {
+            document.querySelectorAll(selector).forEach(element => {
+                element.remove();
+            });
+        });
+
+        const todoTitle = document.querySelector(
+            ".todo-panel .section-heading h2"
+        );
+        if (todoTitle) {
+            todoTitle.textContent = "TODO";
+        }
+
+        const taskInput = document.getElementById("task-name");
+        if (taskInput) {
+            taskInput.placeholder = "e.g. Daily Timeline development";
+        }
+
+        const todoInput = document.querySelector(
+            ".todo-add-form input[name='title']"
+        );
+        if (todoInput) {
+            todoInput.placeholder = "Add a task";
+        }
+
+        const settingsNote = document.querySelector(".settings-note");
+        if (settingsNote) {
+            settingsNote.textContent =
+                "Applies to clock, timeline, and displayed times.";
+        }
+
+        document
+            .querySelectorAll(".current-panel .started-at")
+            .forEach(element => {
+                if (!element.querySelector("span")) {
+                    element.textContent = "Start a new activity.";
+                }
+            });
+
+        const todoEmpty = document.querySelector(
+            ".todo-panel .empty-message"
+        );
+        if (todoEmpty) {
+            todoEmpty.textContent = "No TODOs.";
+        }
+
+        const activityLogHeaders = document.querySelectorAll(
+            ".activity-log-dialog-content th"
+        );
+        ["ACTIVITY", "START", "END"].forEach((label, index) => {
+            if (activityLogHeaders[index]) {
+                activityLogHeaders[index].textContent = label;
+            }
+        });
+
+        const activityLogEmpty = document.querySelector(
+            ".activity-log-dialog-content > .empty-message"
+        );
+        if (activityLogEmpty) {
+            activityLogEmpty.textContent =
+                "No completed activities yet.";
+        }
+
+        const currentEditNote = document.querySelector(
+            "#timeline-edit-current-note > span"
+        );
+        if (currentEditNote) {
+            currentEditNote.textContent =
+                "End time stays NOW while this activity is running.";
+        }
+    }
+
     function getSceneForHour(hour) {
         if (hour < 4 || hour >= 19) {
             return "night";
@@ -161,9 +240,7 @@
             }
 
             if (subtitle) {
-                subtitle.textContent = isToday
-                    ? "今日の記録"
-                    : selectedDate;
+                subtitle.textContent = selectedDate;
             }
         }
 
@@ -180,8 +257,8 @@
             previous.className = "timeline-date-step";
             previous.href = `/?date=${shiftDate(selectedDate, -1)}`;
             previous.textContent = "‹";
-            previous.setAttribute("aria-label", "前の日");
-            previous.title = "前の日";
+            previous.setAttribute("aria-label", "Previous day");
+            previous.title = "Previous day";
 
             const label = document.createElement("span");
             label.className = "timeline-date-label";
@@ -191,8 +268,8 @@
             next.className = "timeline-date-step";
             next.href = `/?date=${shiftDate(selectedDate, 1)}`;
             next.textContent = "›";
-            next.setAttribute("aria-label", "次の日");
-            next.title = "次の日";
+            next.setAttribute("aria-label", "Next day");
+            next.title = "Next day";
 
             const todayLink = document.createElement("a");
             todayLink.className =
@@ -530,7 +607,7 @@
                         id="timeline-edit-close"
                         class="schedule-dialog-close"
                         type="button"
-                        aria-label="編集画面を閉じる"
+                        aria-label="Close editor"
                     >×</button>
                 </header>
 
@@ -567,7 +644,7 @@
                                 <select
                                     id="timeline-edit-start-hour"
                                     name="start_hour"
-                                    aria-label="開始時"
+                                    aria-label="Start hour"
                                     required
                                 ></select>
 
@@ -576,7 +653,7 @@
                                 <select
                                     id="timeline-edit-start-minute"
                                     name="start_minute"
-                                    aria-label="開始分"
+                                    aria-label="Start minute"
                                     required
                                 ></select>
                             </div>
@@ -601,7 +678,7 @@
                                 <select
                                     id="timeline-edit-end-hour"
                                     name="end_hour"
-                                    aria-label="終了時"
+                                    aria-label="End hour"
                                     required
                                 ></select>
 
@@ -610,7 +687,7 @@
                                 <select
                                     id="timeline-edit-end-minute"
                                     name="end_minute"
-                                    aria-label="終了分"
+                                    aria-label="End minute"
                                     required
                                 ></select>
                             </div>
@@ -623,7 +700,7 @@
                         hidden
                     >
                         END <strong>NOW</strong>
-                        <span>進行中のActivityなので終了時刻は変更しません。</span>
+                        <span>End time stays NOW while this activity is running.</span>
                     </div>
 
                     <div class="schedule-dialog-actions">
@@ -750,7 +827,7 @@
 
             if (start && end && end <= start) {
                 endMinute.setCustomValidity(
-                    "終了時刻は開始時刻より後にしてください。"
+                    "End time must be after start time."
                 );
             }
         }
@@ -786,9 +863,9 @@
                 ? "EDIT ACTIVITY"
                 : "EDIT SCHEDULE";
 
-            subtitle.textContent = type === "activity"
-                ? "実績の名前・日時を変更"
-                : "手動予定の名前・日時を変更";
+            if (subtitle) {
+                subtitle.textContent = "";
+            }
 
             nameInput.value = entry.name;
             startDate.value = entry.start_date;
@@ -836,10 +913,10 @@
             button.setAttribute(
                 "aria-label",
                 type === "activity"
-                    ? "Activityを編集"
-                    : "予定を編集"
+                    ? "Edit activity"
+                    : "Edit schedule"
             );
-            button.title = "編集";
+            button.title = "Edit";
             button.innerHTML = EDIT_ICON;
 
             button.addEventListener("click", event => {
@@ -876,7 +953,7 @@
             withTimelineDate(`/schedule/${entry.id}/delete`),
             "timeline-plan-delete-form",
             "timeline-plan-delete-button",
-            "予定を削除"
+            "Delete schedule"
         );
 
         element.appendChild(form);
@@ -901,7 +978,7 @@
                 `/todo/${entry.id}/delete`,
                 "todo-delete-form",
                 "todo-delete-button",
-                "TODOを削除"
+                "Delete TODO"
             );
 
             element.appendChild(form);
@@ -979,6 +1056,7 @@
 
         if (!widget) {
             initializeTimelineEntryEditing();
+            normalizeInterfaceCopy();
             return;
         }
 
@@ -987,6 +1065,7 @@
 
         if (!timeZone) {
             initializeTimelineEntryEditing();
+            normalizeInterfaceCopy();
             return;
         }
 
@@ -1009,6 +1088,7 @@
                 error
             );
             initializeTimelineEntryEditing();
+            normalizeInterfaceCopy();
             return;
         }
 
@@ -1016,6 +1096,7 @@
         initializeTimeZoneWindow(widget, formatter);
         initializeTimelineOverlapLayout(formatter);
         initializeTimelineEntryEditing();
+        normalizeInterfaceCopy();
     }
 
     if (document.readyState === "loading") {
