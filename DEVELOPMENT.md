@@ -72,7 +72,7 @@ Flaskアプリ本体です。
 
 - Current Activity
 - Next Action / Quick Start
-- Today's TODO
+- TODO
 - Timeline
 - Schedule追加ダイアログ
 - Activity Log
@@ -117,10 +117,12 @@ SQLiteの `daily_timeline.db` を使用します。
 
 ```text
 activities    実際のActivity記録
-todos         Today's TODO
+todos         TODO。日付が変わっても保持され、手動削除まで残る
 plans         手動Schedule
 app_settings  Theme / Time Zoneなどの設定
 ```
+
+`todos.todo_date` は作成日の記録として残っていますが、現在の表示対象を日付で絞るためには使用していません。
 
 `daily_timeline.db` は `.gitignore` の対象です。ForkやCloneごとに独立したDBが作成されます。
 
