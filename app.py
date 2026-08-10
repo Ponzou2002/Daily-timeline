@@ -549,12 +549,10 @@ def index():
             """
             SELECT id, title, todo_date, completed_at, created_at
             FROM todos
-            WHERE todo_date = ?
             ORDER BY
                 CASE WHEN completed_at IS NULL THEN 0 ELSE 1 END,
                 created_at ASC
-            """,
-            (today,),
+            """
         ).fetchall()
 
         timeline_rows = connection.execute(
@@ -661,7 +659,6 @@ def get_timeline_edit_data():
         timezone,
         selected_date,
     )
-    today = now.date().isoformat()
 
     with get_db() as connection:
         activity_rows = connection.execute(
@@ -699,12 +696,10 @@ def get_timeline_edit_data():
             """
             SELECT id
             FROM todos
-            WHERE todo_date = ?
             ORDER BY
                 CASE WHEN completed_at IS NULL THEN 0 ELSE 1 END,
                 created_at ASC
-            """,
-            (today,),
+            """
         ).fetchall()
 
     activities = build_timeline_items(
