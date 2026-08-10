@@ -9,7 +9,7 @@
 - 現在のActivityと経過時間を表示
 - 新しいActivity開始時に直前のActivityを自動終了
 - Quick Start
-- Today's TODO
+- TODO（削除するまで日付をまたいで保持）
 - 24時間のToday Timeline
 - 手動Scheduleの追加
 - Scheduleと実績Activityの重複を横並び表示
