@@ -30,6 +30,7 @@
     `;
 
     const TIMELINE_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+    const TIMELINE_OVERLAP_EPSILON = 1e-7;
 
     function getSceneForHour(hour) {
         if (hour < 4 || hour >= 19) {
@@ -361,7 +362,10 @@
 
         orderedEntries.forEach(entry => {
             let laneIndex = laneEnds.findIndex(
-                laneEnd => entry.start >= laneEnd
+                laneEnd => (
+                    entry.start + TIMELINE_OVERLAP_EPSILON
+                    >= laneEnd
+                )
             );
 
             if (laneIndex === -1) {
@@ -441,7 +445,8 @@
         entries.forEach(entry => {
             if (
                 currentGroup.length
-                && entry.start >= currentGroupEnd
+                && entry.start + TIMELINE_OVERLAP_EPSILON
+                    >= currentGroupEnd
             ) {
                 groups.push(currentGroup);
                 currentGroup = [];
