@@ -122,6 +122,12 @@ python -m pip install -r requirements.txt
 - 外部公開する場合は、HTTPS・認証・ファイアウォール・リバースプロキシ等を別途構成してください。
 - Flask標準の開発サーバーは、信頼できるローカル環境やLAN内での利用を想定しています。
 
+## Development
+
+Forkして改造する場合や、AIを使って開発する場合は [`DEVELOPMENT.md`](DEVELOPMENT.md) を参照してください。
+
+リポジトリのフォルダ構成、主要ファイルの役割、データベース構成、開発時に注意するポイントを簡単にまとめています。
+
 ## License
 
 This project is licensed under the PolyForm Noncommercial License 1.0.0.
