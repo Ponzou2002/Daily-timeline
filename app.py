@@ -16,6 +16,14 @@ DEFAULT_SETTINGS = {
     "timezone": "Asia/Tokyo",
 }
 
+DEFAULT_QUICK_STARTS = (
+    "寝る",
+    "仕事",
+    "通話",
+    "開発",
+    "外出",
+)
+
 TEXTURE_OPTIONS = {"glass", "flat", "neumorphism"}
 MAIN_THEME_OPTIONS = {"dark", "light"}
 ACCENT_COLOR_OPTIONS = {
@@ -74,6 +82,37 @@ def init_db():
             )
             """
         )
+
+        quick_starts_exist = connection.execute(
+            """
+            SELECT 1
+            FROM sqlite_master
+            WHERE type = 'table'
+              AND name = 'quick_starts'
+            """
+        ).fetchone() is not None
+
+        connection.execute(
+            """
+            CREATE TABLE IF NOT EXISTS quick_starts (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                sort_order INTEGER NOT NULL
+            )
+            """
+        )
+
+        if not quick_starts_exist:
+            connection.executemany(
+                """
+                INSERT INTO quick_starts (name, sort_order)
+                VALUES (?, ?)
+                """,
+                [
+                    (name, sort_order)
+                    for sort_order, name in enumerate(DEFAULT_QUICK_STARTS)
+                ],
+            )
 
         connection.execute(
             """
@@ -555,6 +594,14 @@ def index():
             """
         ).fetchall()
 
+        quick_start_rows = connection.execute(
+            """
+            SELECT id, name, sort_order
+            FROM quick_starts
+            ORDER BY sort_order ASC, id ASC
+            """
+        ).fetchall()
+
         timeline_rows = connection.execute(
             """
             SELECT id, name, started_at, ended_at
@@ -617,6 +664,7 @@ def index():
         activity_groups[-1]["activities"].append(activity)
 
     todos = [dict(todo) for todo in todo_rows]
+    quick_starts = [dict(quick_start) for quick_start in quick_start_rows]
 
     timeline_items = build_timeline_items(
         timeline_rows,
@@ -638,6 +686,7 @@ def index():
         current_activity=current_activity,
         activity_groups=activity_groups,
         todos=todos,
+        quick_starts=quick_starts,
         timeline_items=timeline_items,
         schedule_items=schedule_items,
         settings=settings,
@@ -1071,6 +1120,63 @@ def delete_schedule(schedule_id):
         )
 
     return redirect_to_timeline_date()
+
+
+@app.post("/quick-start/add")
+def add_quick_start():
+    name = request.form.get("name", "").strip()
+
+    if not name:
+        return redirect(url_for("index"))
+
+    with get_db() as connection:
+        row = connection.execute(
+            """
+            SELECT COALESCE(MAX(sort_order), -1) + 1 AS next_sort_order
+            FROM quick_starts
+            """
+        ).fetchone()
+
+        connection.execute(
+            """
+            INSERT INTO quick_starts (name, sort_order)
+            VALUES (?, ?)
+            """,
+            (name, row["next_sort_order"]),
+        )
+
+    return redirect(url_for("index"))
+
+
+@app.post("/quick-start/<int:quick_start_id>/edit")
+def edit_quick_start(quick_start_id):
+    name = request.form.get("name", "").strip()
+
+    if not name:
+        return redirect(url_for("index"))
+
+    with get_db() as connection:
+        connection.execute(
+            """
+            UPDATE quick_starts
+            SET name = ?
+            WHERE id = ?
+            """,
+            (name, quick_start_id),
+        )
+
+    return redirect(url_for("index"))
+
+
+@app.post("/quick-start/<int:quick_start_id>/delete")
+def delete_quick_start(quick_start_id):
+    with get_db() as connection:
+        connection.execute(
+            "DELETE FROM quick_starts WHERE id = ?",
+            (quick_start_id,),
+        )
+
+    return redirect(url_for("index"))
 
 
 @app.post("/todo/add")
