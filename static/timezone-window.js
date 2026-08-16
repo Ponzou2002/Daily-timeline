@@ -29,6 +29,19 @@
         </svg>
     `;
 
+    const WRENCH_ICON = `
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path
+                d="M14.6 6.3a4.6 4.6 0 0 0-5.8 5.8L3.7 17.2a1.8 1.8 0 0 0 0 2.5l.6.6a1.8 1.8 0 0 0 2.5 0l5.1-5.1a4.6 4.6 0 0 0 5.8-5.8l-2.8 2.8-3.1-3.1 2.8-2.8Z"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+            />
+        </svg>
+    `;
+
     const TIMELINE_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
     const TIMELINE_OVERLAP_EPSILON = 1e-7;
 
@@ -109,6 +122,408 @@
             currentEditNote.textContent =
                 "End time stays NOW while this activity is running.";
         }
+    }
+
+    function ensureQuickStartEditorStyles() {
+        if (document.getElementById("quick-start-editor-styles")) {
+            return;
+        }
+
+        const style = document.createElement("style");
+        style.id = "quick-start-editor-styles";
+        style.textContent = `
+            .quick-start {
+                position: relative;
+            }
+
+            #quick-start-edit-open {
+                position: absolute !important;
+                top: 5px !important;
+                right: -3px !important;
+                z-index: 2;
+
+                display: grid !important;
+                place-items: center;
+
+                width: 36px !important;
+                min-width: 36px !important;
+                height: 36px !important;
+                padding: 6px !important;
+
+                color: var(--accent) !important;
+                background: transparent !important;
+                border-color: transparent !important;
+                border-radius: 8px !important;
+                box-shadow: none !important;
+
+                font-size: 0 !important;
+                line-height: 1 !important;
+            }
+
+            #quick-start-edit-open svg {
+                width: 23px;
+                height: 23px;
+                display: block;
+            }
+
+            #quick-start-edit-open:hover {
+                color: var(--accent-foreground) !important;
+                background: var(--accent-08) !important;
+                border-color: var(--accent-30) !important;
+            }
+
+            html[data-accent="none"][data-theme="dark"]
+                #quick-start-edit-open {
+                color: #ffffff !important;
+            }
+
+            html[data-accent="none"][data-theme="light"]
+                #quick-start-edit-open {
+                color: #000000 !important;
+            }
+
+            html[data-accent="none"][data-theme="dark"]
+                #quick-start-edit-open:hover,
+            html[data-accent="none"][data-theme="light"]
+                #quick-start-edit-open:hover {
+                color: var(--theme-text) !important;
+                background: color-mix(
+                    in srgb,
+                    var(--theme-text) 8%,
+                    transparent
+                ) !important;
+                border-color: var(--theme-border-strong) !important;
+            }
+
+            .quick-start-editor-list {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .quick-start-editor-item {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) auto;
+                align-items: center;
+                gap: 10px;
+
+                min-height: 44px;
+                padding: 7px 8px 7px 12px;
+
+                color: var(--theme-text-soft);
+                background: color-mix(
+                    in srgb,
+                    var(--theme-text) 4%,
+                    transparent
+                );
+                border: 1px solid var(--theme-border);
+                border-radius: 8px;
+            }
+
+            .quick-start-editor-name {
+                min-width: 0;
+                overflow-wrap: anywhere;
+                font-size: 13px;
+            }
+
+            .quick-start-editor-delete-form {
+                margin: 0;
+            }
+
+            .quick-start-editor-delete-button {
+                display: grid !important;
+                place-items: center;
+
+                width: 32px !important;
+                min-width: 32px !important;
+                height: 32px !important;
+                padding: 6px !important;
+
+                color: var(--theme-muted) !important;
+                background: transparent !important;
+                border-color: transparent !important;
+                border-radius: 7px !important;
+                box-shadow: none !important;
+            }
+
+            .quick-start-editor-delete-button svg {
+                width: 17px;
+                height: 17px;
+            }
+
+            .quick-start-editor-delete-button:hover {
+                color: var(--accent-foreground) !important;
+                background: var(--accent-08) !important;
+                border-color: var(--accent-22) !important;
+            }
+
+            .quick-start-editor-add {
+                display: grid !important;
+                grid-template-columns: minmax(0, 1fr) auto;
+                gap: 8px;
+
+                margin-top: 6px;
+                padding-top: 14px;
+                border-top: 1px solid var(--theme-divider);
+            }
+
+            .quick-start-editor-add button {
+                min-width: 74px !important;
+                padding: 9px 13px !important;
+            }
+
+            .quick-start-editor-list > .empty-message {
+                margin: 0;
+                padding: 10px 2px;
+            }
+
+            @media (max-width: 520px) {
+                .quick-start-editor-add {
+                    grid-template-columns: 1fr;
+                }
+
+                .quick-start-editor-add button {
+                    width: 100% !important;
+                }
+            }
+        `;
+
+        document.head.appendChild(style);
+    }
+
+    function decorateQuickStartEditButton() {
+        const button = document.getElementById(
+            "quick-start-edit-open"
+        );
+
+        if (!button) {
+            return;
+        }
+
+        button.innerHTML = WRENCH_ICON;
+        button.setAttribute("aria-label", "Edit Quick Start");
+        button.title = "Edit Quick Start";
+    }
+
+    function getQuickStartEditorList(dialog) {
+        const container = dialog?.querySelector(".schedule-form");
+
+        if (!container) {
+            return null;
+        }
+
+        let list = container.querySelector(
+            ".quick-start-editor-list"
+        );
+
+        if (list) {
+            return list;
+        }
+
+        list = document.createElement("div");
+        list.className = "quick-start-editor-list";
+
+        const actions = container.querySelector(
+            ".schedule-dialog-actions"
+        );
+
+        Array.from(container.children).forEach(child => {
+            if (child !== actions) {
+                list.appendChild(child);
+            }
+        });
+
+        if (actions) {
+            container.insertBefore(list, actions);
+        } else {
+            container.appendChild(list);
+        }
+
+        return list;
+    }
+
+    function normalizeQuickStartEditor(dialog) {
+        const list = getQuickStartEditorList(dialog);
+
+        if (!list) {
+            return;
+        }
+
+        Array.from(list.querySelectorAll(":scope > form.form-row"))
+            .forEach(form => {
+                const action = form.getAttribute("action") || "";
+
+                if (action.includes("/quick-start/add")) {
+                    form.classList.add("quick-start-editor-add");
+                    return;
+                }
+
+                const input = form.querySelector(
+                    "input[name='name']"
+                );
+                const deleteButton = form.querySelector(
+                    "button[formaction]"
+                );
+                const deleteAction = deleteButton?.getAttribute(
+                    "formaction"
+                );
+
+                if (!input || !deleteAction) {
+                    return;
+                }
+
+                const item = document.createElement("div");
+                item.className = "quick-start-editor-item";
+
+                const name = document.createElement("span");
+                name.className = "quick-start-editor-name";
+                name.textContent = input.value;
+
+                const deleteForm = createDeleteForm(
+                    deleteAction,
+                    "quick-start-editor-delete-form",
+                    "quick-start-editor-delete-button",
+                    "Delete quick start"
+                );
+
+                item.append(name, deleteForm);
+                form.replaceWith(item);
+            });
+    }
+
+    function updateQuickStartButtons(parsedDocument) {
+        const sourceForm = parsedDocument.querySelector(
+            ".quick-start-form"
+        );
+        const targetForm = document.querySelector(
+            ".quick-start-form"
+        );
+        const editButton = targetForm?.querySelector(
+            "#quick-start-edit-open"
+        );
+
+        if (!sourceForm || !targetForm || !editButton) {
+            return;
+        }
+
+        Array.from(targetForm.children).forEach(child => {
+            if (child !== editButton) {
+                child.remove();
+            }
+        });
+
+        sourceForm
+            .querySelectorAll("button:not(#quick-start-edit-open)")
+            .forEach(button => {
+                targetForm.insertBefore(
+                    button.cloneNode(true),
+                    editButton
+                );
+            });
+
+        decorateQuickStartEditButton();
+    }
+
+    function updateQuickStartEditor(dialog, parsedDocument) {
+        const currentList = getQuickStartEditorList(dialog);
+        const sourceContainer = parsedDocument.querySelector(
+            "#quick-start-dialog .schedule-form"
+        );
+
+        if (!currentList || !sourceContainer) {
+            return;
+        }
+
+        const sourceChildren = Array.from(
+            sourceContainer.children
+        ).filter(child =>
+            !child.classList.contains("schedule-dialog-actions")
+        );
+
+        currentList.replaceChildren(
+            ...sourceChildren.map(child =>
+                document.importNode(child, true)
+            )
+        );
+
+        normalizeQuickStartEditor(dialog);
+    }
+
+    async function submitQuickStartChange(form, dialog) {
+        const submitButton = form.querySelector(
+            "button[type='submit']"
+        );
+
+        if (submitButton) {
+            submitButton.disabled = true;
+        }
+
+        try {
+            const response = await fetch(
+                form.action,
+                {
+                    method: "POST",
+                    body: new FormData(form),
+                    headers: {
+                        Accept: "text/html",
+                    },
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error(
+                    `Quick Start update failed: ${response.status}`
+                );
+            }
+
+            const html = await response.text();
+            const parsedDocument = new DOMParser()
+                .parseFromString(html, "text/html");
+
+            updateQuickStartButtons(parsedDocument);
+            updateQuickStartEditor(dialog, parsedDocument);
+        } catch (error) {
+            console.warn(error);
+
+            if (submitButton) {
+                submitButton.disabled = false;
+            }
+        }
+    }
+
+    function initializeQuickStartEditor() {
+        ensureQuickStartEditorStyles();
+        decorateQuickStartEditButton();
+
+        const dialog = document.getElementById(
+            "quick-start-dialog"
+        );
+
+        if (!dialog) {
+            return;
+        }
+
+        normalizeQuickStartEditor(dialog);
+
+        dialog.addEventListener("submit", event => {
+            const form = event.target;
+
+            if (!(form instanceof HTMLFormElement)) {
+                return;
+            }
+
+            if (
+                !form.classList.contains("quick-start-editor-add")
+                && !form.classList.contains(
+                    "quick-start-editor-delete-form"
+                )
+            ) {
+                return;
+            }
+
+            event.preventDefault();
+            submitQuickStartChange(form, dialog);
+        });
     }
 
     function getSceneForHour(hour) {
@@ -1050,6 +1465,8 @@
     }
 
     function initialize() {
+        initializeQuickStartEditor();
+
         const widget = document.querySelector(
             ".current-time-widget"
         );
