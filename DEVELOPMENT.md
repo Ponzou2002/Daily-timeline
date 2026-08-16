@@ -58,7 +58,7 @@ Flaskアプリ本体です。
 主に次を担当します。
 
 - SQLiteの初期化と読み書き
-- Activity / TODO / Schedule / Settingsのルート
+- Activity / TODO / Schedule / Quick Start / Settingsのルート
 - Time Zone変換
 - Timelineへ表示するデータの計算
 - Timelineの日付切り替え
@@ -72,6 +72,7 @@ Flaskアプリ本体です。
 
 - Current Activity
 - Next Action / Quick Start
+- Quick Start編集ダイアログ
 - TODO
 - Timeline
 - Schedule追加ダイアログ
@@ -113,14 +114,17 @@ Timeline周辺を変更する場合は、`app.py` と合わせて確認してく
 
 SQLiteの `daily_timeline.db` を使用します。
 
-主なテーブルは次の4つです。
+主なテーブルは次の5つです。
 
 ```text
 activities    実際のActivity記録
 todos         TODO。日付が変わっても保持され、手動削除まで残る
 plans         手動Schedule
+quick_starts  Quick Startの名前と表示順
 app_settings  Theme / Time Zoneなどの設定
 ```
+
+`quick_starts` は既存DBで初めてテーブルを作成したときだけ、初期値として「寝る」「仕事」「通話」「開発」「外出」を登録します。その後はブラウザのQuick Start編集画面から追加・名前変更・削除できます。
 
 `todos.todo_date` は作成日の記録として残っていますが、現在の表示対象を日付で絞るためには使用していません。
 
